@@ -19,39 +19,11 @@
       {
         "network": "GitHub",
         "url": "https://github.com/anibalalpizar"
+      },
+      {
+        "network": "LinkedIn",
+        "url": "https://www.linkedin.com/in/anibalalpizar/"
       }
     ]
-  },
-  "work": [
-    {
-      "name": "Grupo Asesor",
-      "position": "Software Engineer",
-      "startDate": "2025-01-13",
-      "endDate": null
-    },
-    {
-      "name": "Internship At Tech Solutions",
-      "position": "Full Stack Developer",
-      "startDate": "2024-04-01",
-      "endDate": "2024-08-25"
-    },
-    {
-      "name": "Microsoft Student Ambassador",
-      "position": "Student Ambassador",
-      "startDate": "2024-01-20",
-      "endDate": "2024-08-03"
-    },
-    {
-      "name": "Inventory Management System for Non-Profit",
-      "position": "Software Developer",
-      "startDate": "2023-03-26",
-      "endDate": "2023-08-07"
-    },
-    {
-      "name": "Medical Prescription App Development",
-      "position": "Software Developer",
-      "startDate": "2022-08-02",
-      "endDate": "2022-12-15"
-    }
-  ]
+  }
 }
