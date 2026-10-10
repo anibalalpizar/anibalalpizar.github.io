@@ -1,0 +1,41 @@
+---
+// "+" registration marks where a horizontal rule meets the frame's vertical lines.
+// The parent must be `position: relative` (or sticky).
+interface Props {
+  edge?: "top" | "bottom"
+}
+
+const { edge = "top" } = Astro.props
+---
+
+<span class:list={["mark", "left", edge]} aria-hidden="true"></span>
+<span class:list={["mark", "right", edge]} aria-hidden="true"></span>
+
+<style>
+  .mark {
+    position: absolute;
+    z-index: 2;
+    width: 11px;
+    height: 11px;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--cross), var(--cross)) center / 1px 100% no-repeat,
+      linear-gradient(var(--cross), var(--cross)) center / 100% 1px no-repeat;
+  }
+
+  .top {
+    top: -5px;
+  }
+
+  .bottom {
+    bottom: -5px;
+  }
+
+  .left {
+    left: -6px;
+  }
+
+  .right {
+    right: -6px;
+  }
+</style>

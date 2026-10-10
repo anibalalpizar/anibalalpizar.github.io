@@ -1,0 +1,236 @@
+---
+import Marks from "./Marks.astro"
+import { sections } from "../data/site"
+import { localePath, ui, type Lang } from "../i18n/ui"
+import type { Page } from "../data/site"
+
+interface Props {
+  lang: Lang
+  page: Page
+  path: string
+}
+
+const { lang, page, path } = Astro.props
+const t = ui[lang]
+const home = localePath(lang, "/")
+
+// Which nav link is "current" on internal pages.
+const currentSection = page === "case" ? "experience" : page === "projects" ? "projects" : null
+---
+
+<header class="header">
+  <Marks edge="bottom" />
+  {
+    page === "home" ? (
+      <a href={`${home}#top`} class="logo" data-scroll-to="top">
+        Aníbal
+      </a>
+    ) : (
+      <a href={home} class="logo">
+        Aníbal
+      </a>
+    )
+  }
+  <nav class="nav" aria-label={t.ariaMain}>
+    <div class="links">
+      {
+        sections.map(({ id, key }) => {
+          const current = id === currentSection
+          // On /projects, "Projects" goes back to the top of that page.
+          const scrollTarget = page === "projects" && id === "projects" ? "top" : id
+          return (
+            <a
+              href={`${home}#${id}`}
+              class:list={["link", { current }]}
+              aria-current={current ? "page" : undefined}
+              data-scroll-to={scrollTarget}
+            >
+              {t[key]}
+            </a>
+          )
+        })
+      }
+      <span class="divider" aria-hidden="true"></span>
+    </div>
+    <div class="languages" role="group" aria-label={t.ariaLang}>
+      {
+        (["en", "es"] as const).map((option) => (
+          <button
+            type="button"
+            lang={option}
+            class="language"
+            aria-pressed={option === lang ? "true" : "false"}
+            data-language={option}
+            data-href={localePath(option, path)}
+          >
+            {option.toUpperCase()}
+          </button>
+        ))
+      }
+    </div>
+    <button type="button" class="cmdk" aria-label={t.ariaMenu} data-open-command-menu>
+      ⌘K
+    </button>
+    <button type="button" class="theme" aria-label={t.ariaTheme} data-theme-toggle>
+      <span class="theme-icon"></span>
+    </button>
+  </nav>
+</header>
+
+<script>
+  import type { Lang } from "../i18n/ui"
+  import { switchLanguage } from "../scripts/lang"
+  import { toggleTheme } from "../scripts/theme"
+
+  document.querySelector("[data-theme-toggle]")?.addEventListener("click", toggleTheme)
+
+  document.querySelectorAll<HTMLButtonElement>("[data-language]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.getAttribute("aria-pressed") === "true") return
+      switchLanguage(button.dataset.language as Lang, button.dataset.href!)
+    })
+  })
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 clamp(16px, 3vw, 24px);
+    border-bottom: 1px solid var(--line);
+    background: var(--glass);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
+  }
+
+  .logo {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .nav,
+  .links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .links {
+    display: none;
+  }
+
+  @media (min-width: 760px) {
+    .links {
+      display: flex;
+    }
+  }
+
+  .link {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    opacity: var(--dim);
+    transition: opacity 150ms ease;
+  }
+
+  .link:hover,
+  .link.current {
+    opacity: 1;
+  }
+
+  .divider {
+    width: 1px;
+    height: 16px;
+    margin: 0 10px;
+    background: var(--line);
+  }
+
+  .languages {
+    height: 28px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-right: 6px;
+    padding: 0 2px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+
+  .language {
+    height: 22px;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    opacity: 0.5;
+    transition:
+      opacity 150ms ease,
+      background-color 150ms ease;
+  }
+
+  .language:hover {
+    opacity: 1;
+  }
+
+  .language[aria-pressed="true"] {
+    background: var(--active);
+    opacity: 1;
+    cursor: default;
+  }
+
+  .cmdk {
+    height: 28px;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: transparent;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0.75;
+    transition: opacity 150ms ease;
+  }
+
+  .cmdk:hover {
+    opacity: 1;
+  }
+
+  .theme {
+    width: 32px;
+    height: 28px;
+    margin-left: 2px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .theme:hover {
+    background: var(--hover);
+  }
+
+  .theme-icon {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+  }
+</style>

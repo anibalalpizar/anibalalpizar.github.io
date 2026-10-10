@@ -1,132 +1,131 @@
 ---
-import CommandPalette from "../components/CommandPalette.astro";
-import Navbar from "../components/navbar/Navbar.astro";
+import CommandMenu from "../components/CommandMenu.astro"
+import Header from "../components/Header.astro"
+import { SITE_URL, type Page } from "../data/site"
+import { localePath, ui, type Lang } from "../i18n/ui"
 
 interface Props {
-  title: string;
+  lang: Lang
+  title: string
+  /** Page path without the language prefix, e.g. "/" or "/projects". */
+  path: string
+  page: Page
 }
 
-const { title } = Astro.props;
+const { lang, title, path, page } = Astro.props
+const { description } = ui[lang]
+const urlFor = (target: Lang) => new URL(localePath(target, path), SITE_URL).href
+const spanishHref = localePath("es", path)
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang} data-theme="dark">
   <head>
     <title>{title}</title>
     <meta charset="UTF-8" />
-    <meta
-      name="description"
-      content={`Aníbal Alpizar is a software engineer and web developer based in Costa Rica. ${title}`}
-    />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="canonical" href={urlFor(lang)} />
+    <link rel="alternate" hreflang="en" href={urlFor("en")} />
+    <link rel="alternate" hreflang="es" href={urlFor("es")} />
+    <link rel="alternate" hreflang="x-default" href={urlFor("en")} />
     <meta property="og:title" content={title} />
-    <meta
-      property="og:description"
-      content="Aníbal Alpizar is a software engineer and web developer based in Costa Rica."
-    />
+    <meta property="og:description" content={description} />
     <meta property="og:image" content="/logo.jpg" />
-    <meta property="og:url" content={Astro.url} />
+    <meta property="og:url" content={urlFor(lang)} />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content={lang === "es" ? "es_CR" : "en_US"} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
-    <meta
-      name="twitter:description"
-      content="Aníbal Alpizar is a software engineer and web developer based in Costa Rica."
-    />
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content="/logo.jpg" />
     <link rel="icon" type="image/jpg" href="/logo.jpg" />
     <meta name="generator" content={Astro.generator} />
-    <script is:inline>
-      const theme = (() => {
-        if (
-          typeof localStorage !== "undefined" &&
-          localStorage.getItem("theme")
-        ) {
-          return localStorage.getItem("theme");
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap"
+    />
+    <script is:inline define:vars={{ lang, spanishHref }}>
+      try {
+        // Dark is the default; only an explicit choice switches to light.
+        // Key must match STORAGE_KEY in src/scripts/theme.ts.
+        if (localStorage.getItem("site-theme") === "light") {
+          document.documentElement.dataset.theme = "light"
         }
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          return "dark";
+        // English pages send Spanish speakers to /es/ unless they chose English.
+        // Key must match LANG_KEY in src/scripts/lang.ts.
+        var chosen = localStorage.getItem("lang")
+        var prefersSpanish = chosen === "es" || (!chosen && navigator.language.toLowerCase().startsWith("es"))
+        if (lang === "en" && prefersSpanish) {
+          location.replace(spanishHref + location.search + location.hash)
         }
-        return "light";
-      })();
-      document.documentElement.setAttribute("data-theme", theme);
+      } catch {}
     </script>
   </head>
   <body>
-    <Navbar />
-    <main>
-      <slot />
-    </main>
-    <CommandPalette />
+    <div class="site">
+      <div class="frame">
+        <Header lang={lang} page={page} path={path} />
+        <slot />
+      </div>
+    </div>
+    <CommandMenu lang={lang} path={path} />
   </body>
 </html>
 
+<script>
+  import { restoreScroll } from "../scripts/lang"
+  import { scrollToId } from "../scripts/scroll"
+
+  restoreScroll()
+
+  // In-page links (`/#section`) scroll smoothly below the sticky header.
+  // On pages without that section they fall through to normal navigation.
+  document.addEventListener("click", (event) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return
+    const link = (event.target as Element).closest<HTMLAnchorElement>("a[data-scroll-to]")
+    if (link && scrollToId(link.dataset.scrollTo!)) event.preventDefault()
+  })
+</script>
+
 <style is:global>
   :root {
-    --background: #fafafa;
-    --text-main: #1f2937;
-    --text-secondary: #666;
-    --border-color: #ddd;
-    --card-background: #ffffff;
-    --hover-background: #e5e7eb;
-    --technical-card-bg: #f8f9fa;
-    --card-hover-light: rgba(0, 0, 0, 0.048);
-    --card-hover-dark: rgba(255, 0, 0, 0.15);
-    --card-border-hover: rgba(0, 0, 0, 0.15);
-    --card-border-hover-dark: rgba(255, 255, 255, 0.2);
-    --button-background: #0a0a0a;
-    --button-text: #ffffff;
-    --button-hover-background: #333333;
+    --bg: #000000;
+    --fg: #ededed;
+    --muted: #a1a1a1;
+    --line: #232323;
+    --line-inv: #cccccc;
+    --cross: #5e5e5e;
+    --guide: #333333;
+    --hover: #141414;
+    --active: #1c1c1c;
+    --surface: #0a0a0a;
+    --glass: rgba(0, 0, 0, 0.72);
+    --overlay: rgba(0, 0, 0, 0.72);
+    --shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.8);
+    --font: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --px: clamp(20px, 4vw, 32px);
+    --dim: 0.62;
+    color-scheme: dark;
   }
 
-  [data-theme="dark"] {
-    --background: #000000;
-    --text-main: #e5e7eb;
-    --text-secondary: #a3a3a3;
-    --border-color: #333;
-    --card-background: #0a0a0a;
-    --technical-card-bg: #0a0a0a;
-    --card-hover-light: rgba(255, 255, 255, 0.01);
-    --card-border-hover: rgba(255, 255, 255, 0.4);
-    --button-background: #ededed;
-    --button-text: #000000;
-    --button-hover-background: #cccccc;
-  }
-
-  html {
-    font-family:
-      Menlo,
-      Monaco,
-      Lucida Console,
-      "Courier New",
-      Courier,
-      monospace;
-    background: var(--background);
-    letter-spacing: -0.025rem;
-    transition: background-color 0.3s ease;
-  }
-
-  body,
-  figure {
-    margin: 0;
-    padding: 0;
-  }
-
-  main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-
-  a {
-    text-decoration: none;
-    color: var(--text-main);
-  }
-
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  :root[data-theme="light"] {
+    --bg: #ffffff;
+    --fg: #0a0a0a;
+    --muted: #666666;
+    --line: #e6e6e6;
+    --line-inv: #2a2a2a;
+    --cross: #999999;
+    --guide: #d6d6d6;
+    --hover: #f4f4f4;
+    --active: #f2f2f2;
+    --surface: #ffffff;
+    --glass: rgba(255, 255, 255, 0.82);
+    --overlay: rgba(10, 10, 10, 0.18);
+    --shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.2);
+    color-scheme: light;
   }
 
   *,
@@ -135,67 +134,75 @@ const { title } = Astro.props;
     box-sizing: border-box;
   }
 
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
   h1,
   h2,
   h3,
-  h4 {
+  h4,
+  p,
+  figure {
     margin: 0;
-    font-family:
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      Roboto,
-      Oxygen,
-      Ubuntu,
-      Cantarell,
-      "Open Sans",
-      "Helvetica Neue",
-      sans-serif;
-    color: var(--text-main);
   }
 
-  p {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin: 0;
-    text-wrap: pretty;
+  a {
+    color: inherit;
+    text-decoration: none;
   }
 
-  .print {
-    display: none !important;
+  button,
+  input {
+    font-family: inherit;
+    color: inherit;
   }
 
-  .technical-details {
-    background-color: var(--technical-card-bg) !important;
-    border-color: var(--border-color) !important;
-    transition:
-      background-color 0.3s ease,
-      border-color 0.3s ease;
+  ::selection {
+    background: var(--fg);
+    color: var(--bg);
   }
 
-  @media print {
-    .no-print {
-      display: none !important;
-    }
-
-    .print {
-      display: block !important;
-    }
-
-    astro-dev-toolbar {
-      display: none !important;
-    }
-
-    article {
-      break-inside: avoid;
-    }
+  /* Anchor targets land below the 56px sticky header. */
+  [id] {
+    scroll-margin-top: 56px;
   }
 
-  @media (max-width: 700px) {
-    main {
-      padding: 1rem;
-    }
+  /* overflow-x: clip (not hidden) keeps the sticky header working
+     while hiding the "+" marks that poke past the frame. */
+  .site {
+    min-height: 100vh;
+    overflow-x: clip;
+    background: var(--bg);
+    color: var(--fg);
+  }
+
+  .frame {
+    max-width: 1120px;
+    min-height: 100vh;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+
+  /* Internal pages (case studies, /projects) fill the frame so the footer sits at the bottom. */
+  .page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 </style>
