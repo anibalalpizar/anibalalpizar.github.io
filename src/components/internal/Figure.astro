@@ -1,0 +1,155 @@
+---
+import type { Figure } from "../../data/cases"
+import { L, ui, type Lang } from "../../i18n/ui"
+
+interface Props {
+  figure: Figure
+  /** Running number within the case, e.g. "01". */
+  number: string
+  lang: Lang
+  /** Tighter horizontal padding, for figures inside a Detail block. */
+  inset?: boolean
+}
+
+const { figure, number, lang, inset = false } = Astro.props
+const t = ui[lang]
+const caption = L(figure.caption, lang)
+const bleed = figure.mode === "bleed"
+
+// Natural size, capped at 760px wide and 640px tall. Setting the width up front
+// (with height: auto) reserves the space before the lazy image loads.
+const MAX_WIDTH = 760
+const MAX_HEIGHT = 640
+const displayWidth = Math.round(
+  Math.min(figure.width, MAX_WIDTH, (MAX_HEIGHT * figure.width) / figure.height)
+)
+const sourceHost = figure.source && new URL(figure.source).hostname.replace(/^www\./, "")
+---
+
+<figure class:list={["figure", { inset }]}>
+  {
+    bleed ? (
+      <img
+        src={figure.src}
+        alt={caption}
+        width={figure.width}
+        height={figure.height}
+        loading="lazy"
+        class="bleed"
+      />
+    ) : (
+      <div class="plate">
+        <img
+          src={figure.src}
+          alt={caption}
+          width={figure.width}
+          height={figure.height}
+          loading="lazy"
+          class="image"
+          data-tone={figure.tone}
+          style={`width: ${displayWidth}px`}
+        />
+      </div>
+    )
+  }
+  <figcaption>
+    <span class="label">
+      <span class="number">{t.fig} {number}</span>
+      <span>{caption}</span>
+    </span>
+    {
+      figure.source && (
+        <a href={figure.source} target="_blank" rel="noreferrer" class="source">
+          {t.source}: {sourceHost} ↗
+        </a>
+      )
+    }
+  </figcaption>
+</figure>
+
+<style>
+  .figure {
+    margin: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .plate {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: clamp(28px, 5vw, 64px) var(--px);
+    background-color: var(--bg);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 32px 32px;
+    background-position: center center;
+  }
+
+  .inset .plate {
+    padding: clamp(24px, 4vw, 48px) clamp(18px, 3vw, 28px);
+  }
+
+  .image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    transition: filter 200ms ease;
+  }
+
+  /* Monochrome diagrams follow the theme instead of glowing as a white box
+     in dark mode; hue-rotate brings colored accents back to their own hue. */
+  :global([data-theme="dark"]) .image[data-tone="light"],
+  :global([data-theme="light"]) .image[data-tone="dark"] {
+    filter: invert(1) hue-rotate(180deg);
+  }
+
+  .bleed {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 24px;
+    padding: 14px var(--px);
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .inset figcaption {
+    padding: 14px clamp(18px, 3vw, 28px);
+  }
+
+  .label {
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .number {
+    flex-shrink: 0;
+    opacity: var(--dim);
+  }
+
+  .source {
+    opacity: var(--dim);
+    overflow-wrap: anywhere;
+    transition: opacity 150ms ease;
+  }
+
+  .source:hover {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .image {
+      transition: none;
+    }
+  }
+</style>

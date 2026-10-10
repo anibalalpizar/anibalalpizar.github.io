@@ -1,0 +1,15 @@
+---
+import CasePage from "../../components/pages/CasePage.astro"
+import { caseStudies } from "../../data/cases"
+
+export function getStaticPaths() {
+  return caseStudies.map(({ path }) => {
+    const [, year, slug] = path.split("/")
+    return { params: { year, slug } }
+  })
+}
+
+const { year, slug } = Astro.params
+---
+
+<CasePage lang="en" path={`/${year}/${slug}`} />

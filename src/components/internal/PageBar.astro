@@ -1,0 +1,46 @@
+---
+// Top bar of an internal page hero: a way back on the left, a counter on the right.
+interface Props {
+  backHref: string
+  backLabel: string
+  meta: string
+}
+
+const { backHref, backLabel, meta } = Astro.props
+---
+
+<div class="bar">
+  <a href={backHref} class="back">{backLabel}</a>
+  <span class="meta">{meta}</span>
+</div>
+
+<style>
+  .bar {
+    position: absolute;
+    top: 20px;
+    left: var(--px);
+    right: var(--px);
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+
+  .back,
+  .meta {
+    opacity: var(--dim);
+  }
+
+  .back {
+    transition: opacity 150ms ease;
+  }
+
+  .back:hover {
+    opacity: 1;
+  }
+
+  .meta {
+    font-variant-numeric: tabular-nums;
+  }
+</style>

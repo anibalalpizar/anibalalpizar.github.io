@@ -1,0 +1,44 @@
+---
+import Marks from "../Marks.astro"
+import { ui, type Lang } from "../../i18n/ui"
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const year = new Date().getFullYear()
+---
+
+<footer class="footer">
+  <Marks />
+  <span class="dim">© {year} Aníbal</span>
+  <a href="#top" class="dim link" data-scroll-to="top">{ui[lang].backTop}</a>
+</footer>
+
+<style>
+  .footer {
+    position: relative;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 20px var(--px);
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+  }
+
+  .dim {
+    opacity: var(--dim);
+  }
+
+  .link {
+    transition: opacity 150ms ease;
+  }
+
+  .link:hover {
+    opacity: 1;
+  }
+</style>
