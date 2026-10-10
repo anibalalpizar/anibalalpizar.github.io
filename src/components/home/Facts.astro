@@ -1,0 +1,105 @@
+---
+import Marks from "../Marks.astro"
+import { basics } from "../../data/cv.json"
+import { experience } from "../../data/site"
+import { L, locales, ui, type Lang } from "../../i18n/ui"
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+const current = experience.find((job) => job.endDate == null)
+const { city, region } = basics.location
+---
+
+<section class="facts">
+  <Marks />
+  <div class="cells">
+    {
+      current && (
+        <div class="cell">
+          <span class="label">{t.currently}</span>
+          <span>
+            {L(current.role, lang)} {t.currentlyAt} {L(current.company, lang)}
+          </span>
+        </div>
+      )
+    }
+    <div class="cell">
+      <span class="label">{t.basedIn}</span>
+      <span>{city}, {region}</span>
+    </div>
+    <div class="cell">
+      <span class="label">{t.localTime}</span>
+      <span class="time">
+        <span class="clock" data-clock data-locale={locales[lang]}>--:--:-- --</span>
+        <span class="zone">GMT−6</span>
+      </span>
+    </div>
+  </div>
+</section>
+
+<script>
+  const clock = document.querySelector<HTMLElement>("[data-clock]")
+
+  function tick() {
+    if (!clock) return
+    clock.textContent = new Date().toLocaleTimeString(clock.dataset.locale, {
+      timeZone: "America/Costa_Rica",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    })
+  }
+
+  tick()
+  setInterval(tick, 1000)
+</script>
+
+<style>
+  .facts {
+    position: relative;
+    border-top: 1px solid var(--line);
+  }
+
+  .cells {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    background: var(--line);
+  }
+
+  .cell {
+    flex: 1 1 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px var(--px);
+    background: var(--bg);
+  }
+
+  .label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: var(--dim);
+  }
+
+  .time {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .clock {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .zone {
+    font-size: 12px;
+    opacity: var(--dim);
+  }
+</style>

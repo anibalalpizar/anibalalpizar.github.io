@@ -1,0 +1,27 @@
+---
+import Contact from "../home/Contact.astro"
+import Experience from "../home/Experience.astro"
+import Facts from "../home/Facts.astro"
+import Hero from "../home/Hero.astro"
+import Projects from "../home/Projects.astro"
+import Stack from "../home/Stack.astro"
+import Layout from "../../layouts/Layout.astro"
+import { ui, type Lang } from "../../i18n/ui"
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+---
+
+<Layout lang={lang} title={ui[lang].docTitle} path="/" page="home">
+  <main class="page">
+    <Hero lang={lang} />
+    <Facts lang={lang} />
+    <Experience lang={lang} />
+    <Projects lang={lang} />
+    <Stack lang={lang} />
+    <Contact lang={lang} />
+  </main>
+</Layout>

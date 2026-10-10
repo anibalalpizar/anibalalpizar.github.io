@@ -1,0 +1,65 @@
+---
+interface Props {
+  index: string
+  title: string
+  meta?: string
+  metaHref?: string
+}
+
+const { index, title, meta, metaHref } = Astro.props
+---
+
+<div class="section-header">
+  <div class="heading">
+    <span class="index">{index}</span>
+    <h2>{title}</h2>
+  </div>
+  {
+    meta &&
+      (metaHref ? (
+        <a href={metaHref} target="_blank" rel="noreferrer" class="meta link">
+          {meta}
+        </a>
+      ) : (
+        <span class="meta">{meta}</span>
+      ))
+  }
+</div>
+
+<style>
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: clamp(48px, 7vw, 80px) var(--px) 24px;
+  }
+
+  .heading {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .index,
+  .meta {
+    font-size: 12px;
+    opacity: var(--dim);
+  }
+
+  h2 {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 600;
+    letter-spacing: -0.05em;
+    line-height: 1;
+  }
+
+  .link {
+    transition: opacity 150ms ease;
+  }
+
+  .link:hover {
+    opacity: 1;
+  }
+</style>

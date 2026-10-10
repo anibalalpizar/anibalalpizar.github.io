@@ -1,0 +1,123 @@
+---
+import Marks from "../Marks.astro"
+import { CV_URL, EMAIL, GITHUB_URL, LINKEDIN_URL } from "../../data/site"
+import { localePath, ui, type Lang } from "../../i18n/ui"
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+const year = new Date().getFullYear()
+---
+
+<section id="contact" class="contact">
+  <Marks />
+  <div class="eyebrow">
+    <span>04</span>
+    <span class="caps">{t.navContact}</span>
+  </div>
+  <h2>{t.connect}</h2>
+  <a href={`mailto:${EMAIL}`} class="row">
+    <span>{t.email}</span>
+    <span class="glyph" aria-hidden="true">↗</span>
+  </a>
+  <a href={GITHUB_URL} target="_blank" rel="noreferrer" class="row">
+    <span>{t.github}</span>
+    <span class="glyph" aria-hidden="true">↗</span>
+  </a>
+  <a href={LINKEDIN_URL} target="_blank" rel="noreferrer" class="row">
+    <span>{t.linkedin}</span>
+    <span class="glyph" aria-hidden="true">↗</span>
+  </a>
+  <a href={CV_URL} download class="row">
+    <span>{t.downloadCv}</span>
+    <span class="glyph" aria-hidden="true">↓</span>
+  </a>
+  <footer class="footer">
+    <span class="dim">© {year} Aníbal</span>
+    <a href={localePath(lang, "/#top")} class="dim link" data-scroll-to="top">{t.backTop}</a>
+  </footer>
+</section>
+
+<style>
+  .contact {
+    position: relative;
+    flex: 1;
+    border-top: 1px solid var(--line);
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  .eyebrow {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: clamp(48px, 7vw, 80px) var(--px) 0;
+    font-size: 12px;
+    opacity: var(--dim);
+  }
+
+  .caps {
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    padding: 20px var(--px) clamp(48px, 7vw, 88px);
+    font-size: clamp(52px, 10vw, 128px);
+    font-weight: 600;
+    letter-spacing: -0.065em;
+    line-height: 0.88;
+    text-wrap: balance;
+    hyphens: auto;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px var(--px);
+    border-top: 1px solid var(--line-inv);
+    font-size: clamp(20px, 2.6vw, 30px);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    transition:
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .row:hover {
+    background: var(--bg);
+    color: var(--fg);
+  }
+
+  .glyph {
+    font-size: 14px;
+  }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 20px var(--px);
+    border-top: 1px solid var(--line-inv);
+    font-size: 12px;
+  }
+
+  .dim {
+    opacity: var(--dim);
+  }
+
+  .link {
+    transition: opacity 150ms ease;
+  }
+
+  .link:hover {
+    opacity: 1;
+  }
+</style>

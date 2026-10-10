@@ -1,0 +1,153 @@
+---
+import Marks from "../Marks.astro"
+import SectionHeader from "./SectionHeader.astro"
+import { experience } from "../../data/site"
+import { L, localePath, ui, type Lang } from "../../i18n/ui"
+import { monthsSince } from "../../utils/dates"
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+
+const jobs = experience.map((job) => {
+  const current = job.endDate == null
+  return {
+    current,
+    company: L(job.company, lang),
+    role: L(job.role, lang),
+    year: new Date(job.endDate ?? job.startDate).getFullYear(),
+    note: current ? monthsSince(job.startDate, lang) : L(job.note, lang),
+    startDate: job.startDate,
+    href: job.casePath && localePath(lang, job.casePath),
+  }
+})
+
+const firstYear = Math.min(...experience.map((job) => new Date(job.startDate).getFullYear()))
+const lastYear = jobs.some((job) => job.current)
+  ? t.now
+  : Math.max(...jobs.map((job) => job.year))
+---
+
+<section id="experience" class="experience">
+  <Marks />
+  <SectionHeader index="01" title={t.navExperience} meta={`${firstYear} — ${lastYear}`} />
+  {
+    jobs.map((job) => {
+      const Row = job.href ? "a" : "div"
+      return (
+        <Row href={job.href} class:list={["row", { link: job.href }]}>
+          <span class="year">
+            {job.current ? <><span class="dot" />{t.now}</> : job.year}
+          </span>
+          <div class="details">
+            <span class="company">{job.company}</span>
+            <span class="role">{job.role}</span>
+            <span
+              class="note"
+              data-since={job.current ? job.startDate : undefined}
+              data-lang={lang}
+            >
+              {job.note}
+            </span>
+          </div>
+          {job.href && <span class="arrow" aria-hidden="true">→</span>}
+        </Row>
+      )
+    })
+  }
+</section>
+
+<script>
+  import type { Lang } from "../../i18n/ui"
+  import { monthsSince } from "../../utils/dates"
+
+  // The build-time month count goes stale between deploys; refresh it on load.
+  document.querySelectorAll<HTMLElement>("[data-since]").forEach((el) => {
+    el.textContent = monthsSince(el.dataset.since!, el.dataset.lang as Lang)
+  })
+</script>
+
+<style>
+  .experience {
+    position: relative;
+    border-top: 1px solid var(--line);
+  }
+
+  /* The extra 28px on the right is the channel for the arrow, kept on every
+     row so the columns line up. */
+  .row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(56px, 120px) minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+    padding: 22px calc(var(--px) + 28px) 22px var(--px);
+    border-top: 1px solid var(--line);
+  }
+
+  /* Only rows with a case study react to hover; the current job has nowhere to go. */
+  .link {
+    transition:
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .link:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  .arrow {
+    position: absolute;
+    top: 50%;
+    right: var(--px);
+    transform: translateY(-50%);
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .year {
+    font-size: 13px;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    vertical-align: middle;
+  }
+
+  .details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 24px;
+  }
+
+  .company {
+    flex: 1 1 260px;
+    min-width: 0;
+    font-size: clamp(18px, 2vw, 22px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.3;
+  }
+
+  .role {
+    flex: 1 1 200px;
+    opacity: var(--dim);
+  }
+
+  .note {
+    flex: 0 0 136px;
+    font-size: 12px;
+    opacity: var(--dim);
+    text-align: right;
+  }
+</style>

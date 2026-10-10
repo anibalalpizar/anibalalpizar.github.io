@@ -1,26 +1,5 @@
 ---
-import Experience from "../components/index/Experience.astro";
-import Hero from "../components/index/Hero.astro";
-import Projects from "../components/index/Projects.astro";
-import Layout from "../layouts/Layout.astro";
+import HomePage from "../components/pages/HomePage.astro"
 ---
 
-<Layout title="Aníbal Alpizar's portfolio">
-  <main>
-    <Experience />
-    <Projects />
-  </main>
-</Layout>
-
-<style>
-  main {
-    margin: auto;
-    width: 100%;
-  }
-
-  @media (width <= 700px) {
-    main {
-      padding: 2rem;
-    }
-  }
-</style>
+<HomePage lang="en" />

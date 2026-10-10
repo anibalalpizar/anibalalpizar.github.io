@@ -1,0 +1,160 @@
+---
+import Marks from "../Marks.astro"
+import SectionHeader from "./SectionHeader.astro"
+import { featuredProjects, GITHUB_URL, kinds, projects } from "../../data/site"
+import { L, localePath, ui, type Lang } from "../../i18n/ui"
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+---
+
+<section id="projects" class="projects">
+  <Marks />
+  <SectionHeader index="02" title={t.navProjects} meta={t.moreGithub} metaHref={GITHUB_URL} />
+  <div class="grid">
+    {
+      featuredProjects.map((project, i) => (
+        <a id={project.id} href={project.github} target="_blank" rel="noreferrer" class="card">
+          <div class="top">
+            <span>
+              {String(i + 1).padStart(2, "0")} — {L(kinds[project.kind], lang)}
+            </span>
+            <span aria-hidden="true">↗</span>
+          </div>
+          <div class="body">
+            <h3>{project.name}</h3>
+            <p class="description">{L(project.description, lang)}</p>
+            <div class="footer">
+              <span>{(project.homeStack ?? project.stack).join(" · ")}</span>
+              {project.downloads && (
+                <span>
+                  ↓ {project.downloads} {t.downloads}
+                </span>
+              )}
+            </div>
+          </div>
+        </a>
+      ))
+    }
+  </div>
+  <a href={localePath(lang, "/projects")} class="all">
+    <span>{t.allProjects}</span>
+    <span class="all-meta">
+      <span class="count">{projects.length}</span>
+      <span aria-hidden="true">→</span>
+    </span>
+  </a>
+</section>
+
+<style>
+  .projects {
+    position: relative;
+    border-top: 1px solid var(--line);
+  }
+
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    background: var(--line);
+    border-top: 1px solid var(--line);
+  }
+
+  .card {
+    flex: 1 1 calc(50% - 1px);
+    min-width: min(100%, 320px);
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 48px;
+    padding: 28px var(--px);
+    background: var(--bg);
+    transition:
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .card:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 12px;
+    opacity: var(--dim);
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  h3 {
+    font-size: clamp(26px, 3.2vw, 36px);
+    font-weight: 600;
+    letter-spacing: -0.05em;
+    line-height: 1.05;
+  }
+
+  .description {
+    max-width: 420px;
+    line-height: 1.55;
+    opacity: var(--dim);
+    text-wrap: pretty;
+  }
+
+  .footer {
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    opacity: var(--dim);
+  }
+
+  .all {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px var(--px);
+    border-top: 1px solid var(--line);
+    font-size: clamp(18px, 2vw, 22px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.3;
+    transition:
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .all:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  .all-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .count {
+    font-size: 12px;
+    opacity: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+</style>
