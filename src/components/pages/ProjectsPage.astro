@@ -1,0 +1,493 @@
+---
+import Marks from "../Marks.astro"
+import PageBar from "../internal/PageBar.astro"
+import PageFooter from "../internal/PageFooter.astro"
+import Layout from "../../layouts/Layout.astro"
+import { categories, GITHUB_URL, kinds, projects } from "../../data/site"
+import { L, localePath, ui, type Lang } from "../../i18n/ui"
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+const two = (n: number) => String(n).padStart(2, "0")
+
+const tabs = [
+  { key: "all", label: t.all, count: projects.length },
+  ...categories.map((key) => ({
+    key,
+    label: t.categories[key],
+    count: projects.filter((project) => project.category === key).length,
+  })),
+]
+
+const rows = projects.map((project, i) => {
+  const kind = L(kinds[project.kind], lang)
+  const description = L(project.description, lang)
+  return {
+    ...project,
+    index: two(i + 1),
+    kind,
+    description,
+    // Everything the search box matches against, in the page's language.
+    haystack: [project.name, description, project.stack.join(" "), kind, t.categories[project.category]]
+      .join(" ")
+      .toLowerCase(),
+  }
+})
+
+// Strings the filtering script needs on the client.
+const strings = {
+  result: t.result,
+  results: t.results,
+  noMatch: t.noMatch,
+  categories: { all: t.all, ...t.categories },
+}
+---
+
+<Layout lang={lang} title={`${t.navProjects} — Aníbal`} path="/projects" page="projects">
+  <main class="page">
+    <section id="top" class="hero">
+      <PageBar
+        backHref={localePath(lang, "/#projects")}
+        backLabel={t.backHome}
+        meta={`${projects.length} ${t.projectsCount}`}
+      />
+      <div class="hero-row">
+        <h1>{t.navProjects}</h1>
+        <a href={GITHUB_URL} target="_blank" rel="noreferrer" class="github">{t.moreGithub}</a>
+      </div>
+    </section>
+
+    <section class="browser" data-projects data-strings={JSON.stringify(strings)}>
+      <Marks />
+      <label class="search">
+        <input
+          type="text"
+          placeholder={t.searchProjects}
+          aria-label={t.searchProjects}
+          autocomplete="off"
+          spellcheck="false"
+          data-search
+        />
+        <span class="count" aria-live="polite" data-count>
+          {projects.length} {t.results}
+        </span>
+        <span class="chip" aria-hidden="true">/</span>
+      </label>
+
+      <div class="tabs" role="tablist">
+        {
+          tabs.map(({ key, label, count }) => (
+            <button
+              type="button"
+              role="tab"
+              class="tab"
+              aria-selected={key === "all" ? "true" : "false"}
+              data-category={key}
+            >
+              <span>{label}</span>
+              <span class="tab-count" data-tab-count>
+                {count}
+              </span>
+            </button>
+          ))
+        }
+      </div>
+
+      {
+        rows.map((row) => (
+          <div
+            id={`p-${row.id}`}
+            class="row"
+            data-project
+            data-category={row.category}
+            data-search={row.haystack}
+          >
+            <div class="meta">
+              <span class="index">{row.index}</span>
+              <span class="kind">{row.kind}</span>
+            </div>
+            <div class="details">
+              <div class="name-stack">
+                <span class="name">{row.name}</span>
+                <span class="stack">{row.stack.join(" · ")}</span>
+              </div>
+              <p class="description">{row.description}</p>
+              <div class="links">
+                <span class="link-row">
+                  <a href={row.github} target="_blank" rel="noreferrer">
+                    GitHub ↗
+                  </a>
+                  <a href={row.demo} target="_blank" rel="noreferrer">
+                    Demo ↗
+                  </a>
+                </span>
+                {row.downloads && (
+                  <span class="downloads">
+                    ↓ {row.downloads} {t.downloads}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        ))
+      }
+
+      <div class="empty" hidden data-empty>
+        <span class="empty-text" data-empty-text></span>
+        <button type="button" class="clear" data-clear>{t.clearSearch}</button>
+      </div>
+    </section>
+
+    <PageFooter lang={lang} />
+  </main>
+</Layout>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-projects]")!
+  const input = root.querySelector<HTMLInputElement>("[data-search]")!
+  const count = root.querySelector<HTMLElement>("[data-count]")!
+  const tabs = [...root.querySelectorAll<HTMLButtonElement>("[role=tab]")]
+  const rows = [...root.querySelectorAll<HTMLElement>("[data-project]")]
+  const empty = root.querySelector<HTMLElement>("[data-empty]")!
+  const emptyText = root.querySelector<HTMLElement>("[data-empty-text]")!
+  const strings: {
+    result: string
+    results: string
+    noMatch: string
+    categories: Record<string, string>
+  } = JSON.parse(root.dataset.strings!)
+
+  // ?q= and ?cat= keep a filtered view shareable.
+  const params = new URLSearchParams(location.search)
+  let category = params.get("cat") ?? "all"
+  if (!tabs.some((tab) => tab.dataset.category === category)) category = "all"
+  input.value = params.get("q") ?? ""
+
+  function update() {
+    const query = input.value.trim()
+    const needle = query.toLowerCase()
+    const matching = rows.filter((row) => row.dataset.search!.includes(needle))
+
+    // Tab counts follow the search, so they show where results are.
+    tabs.forEach((tab) => {
+      const key = tab.dataset.category!
+      const n = key === "all" ? matching.length : matching.filter((row) => row.dataset.category === key).length
+      tab.querySelector("[data-tab-count]")!.textContent = String(n)
+      tab.setAttribute("aria-selected", String(key === category))
+    })
+
+    let visible = 0
+    rows.forEach((row) => {
+      const show =
+        matching.includes(row) && (category === "all" || row.dataset.category === category)
+      row.hidden = !show
+      if (show) visible++
+    })
+
+    count.textContent = `${visible} ${visible === 1 ? strings.result : strings.results}`
+    empty.hidden = visible > 0
+    emptyText.textContent = `${strings.noMatch} “${query || strings.categories[category]}”`
+
+    const next = new URLSearchParams()
+    if (query) next.set("q", query)
+    if (category !== "all") next.set("cat", category)
+    const search = next.toString()
+    history.replaceState(null, "", search ? `?${search}` : location.pathname)
+  }
+
+  input.addEventListener("input", update)
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && input.value) {
+      event.preventDefault()
+      input.value = ""
+      update()
+    }
+  })
+
+  tabs.forEach((tab) =>
+    tab.addEventListener("click", () => {
+      category = tab.dataset.category!
+      update()
+    })
+  )
+
+  root.querySelector("[data-clear]")!.addEventListener("click", () => {
+    input.value = ""
+    category = "all"
+    update()
+    input.focus()
+  })
+
+  // "/" jumps to the search box, unless the reader is already typing somewhere.
+  window.addEventListener("keydown", (event) => {
+    if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) return
+    const target = event.target as HTMLElement
+    if (target.closest("input, textarea, [contenteditable]")) return
+    if (document.querySelector<HTMLElement>("[data-command-menu]")?.hidden === false) return
+    event.preventDefault()
+    input.focus()
+  })
+
+  update()
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    padding: clamp(84px, 11vw, 136px) var(--px) clamp(36px, 5vw, 56px);
+  }
+
+  .hero-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 28px;
+    flex-wrap: wrap;
+  }
+
+  h1 {
+    margin-left: -0.04em;
+    font-size: clamp(56px, 11vw, 136px);
+    font-weight: 600;
+    letter-spacing: -0.065em;
+    line-height: 0.88;
+  }
+
+  .github {
+    font-size: 12px;
+    opacity: var(--dim);
+    transition: opacity 150ms ease;
+  }
+
+  .github:hover {
+    opacity: 1;
+  }
+
+  .browser {
+    position: relative;
+    border-top: 1px solid var(--line);
+  }
+
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 64px;
+    padding: 0 var(--px);
+    cursor: text;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-size: clamp(16px, 1.6vw, 19px);
+    letter-spacing: -0.015em;
+  }
+
+  input::placeholder {
+    color: var(--muted);
+  }
+
+  .count {
+    flex-shrink: 0;
+    font-size: 12px;
+    opacity: var(--dim);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chip {
+    flex-shrink: 0;
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 1.3;
+    opacity: var(--dim);
+  }
+
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    background: var(--line);
+    border-top: 1px solid var(--line);
+  }
+
+  .tab {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px var(--px);
+    border: 0;
+    background: var(--bg);
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+  }
+
+  .tab:hover {
+    background: var(--hover);
+  }
+
+  .tab[aria-selected="true"] {
+    background: var(--fg);
+    color: var(--bg);
+    transition: none;
+  }
+
+  .tab-count {
+    font-size: 12px;
+    opacity: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(56px, 120px) minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+    padding: 22px var(--px);
+    border-top: 1px solid var(--line);
+    transition:
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .row:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  .row[hidden] {
+    display: none;
+  }
+
+  .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .index {
+    font-size: 13px;
+  }
+
+  .kind {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: var(--dim);
+  }
+
+  .details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px 24px;
+  }
+
+  .name-stack {
+    flex: 1 1 240px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .name {
+    font-size: clamp(18px, 2vw, 22px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.3;
+  }
+
+  .stack {
+    font-size: 12px;
+    opacity: var(--dim);
+  }
+
+  .description {
+    flex: 1 1 300px;
+    min-width: 0;
+    line-height: 1.55;
+    opacity: var(--dim);
+    text-wrap: pretty;
+  }
+
+  .links {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .link-row {
+    display: flex;
+    gap: 16px;
+  }
+
+  .link-row a {
+    text-underline-offset: 3px;
+  }
+
+  .link-row a:hover {
+    text-decoration: underline;
+  }
+
+  .downloads {
+    opacity: var(--dim);
+  }
+
+  .empty {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px 24px;
+    padding: clamp(40px, 6vw, 64px) var(--px);
+    border-top: 1px solid var(--line);
+  }
+
+  .empty[hidden] {
+    display: none;
+  }
+
+  .empty-text {
+    min-width: 0;
+    font-size: clamp(18px, 2vw, 22px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .clear {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: var(--dim);
+    transition: opacity 150ms ease;
+  }
+
+  .clear:hover {
+    opacity: 1;
+  }
+</style>
