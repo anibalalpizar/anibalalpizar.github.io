@@ -1,0 +1,424 @@
+---
+import { caseStudies } from "../data/cases"
+import {
+  CV_URL,
+  EMAIL,
+  GITHUB_URL,
+  LINKEDIN_URL,
+  featuredProjects,
+  kinds,
+  projects,
+  sections,
+} from "../data/site"
+import { L, localePath, ui, type Lang } from "../i18n/ui"
+
+interface Props {
+  lang: Lang
+  /** Current page path without the language prefix. */
+  path: string
+}
+
+const { lang, path } = Astro.props
+const t = ui[lang]
+const g = t.groups
+const otherLang: Lang = lang === "en" ? "es" : "en"
+
+// "jump" scrolls on the home page and goes to /#id elsewhere; "go" opens a page.
+const items = [
+  ...sections.map(({ id, key, index }) => ({
+    group: g.sections,
+    label: t[key],
+    hint: index,
+    action: "jump",
+    target: id,
+  })),
+  ...caseStudies.map((study) => ({
+    group: g.cases,
+    label: L(study.job.company, lang),
+    hint: String(new Date(study.job.endDate ?? study.job.startDate).getFullYear()),
+    action: "go",
+    target: localePath(lang, study.path),
+  })),
+  {
+    group: g.projects,
+    label: t.allProjects,
+    hint: String(projects.length),
+    action: "go",
+    target: localePath(lang, "/projects"),
+  },
+  ...featuredProjects.map(({ id, name, kind }) => ({
+    group: g.projects,
+    label: name,
+    hint: L(kinds[kind], lang),
+    action: "jump",
+    target: id,
+  })),
+  { group: g.links, label: t.github, hint: "↗", action: "open", target: GITHUB_URL },
+  { group: g.links, label: t.linkedin, hint: "↗", action: "open", target: LINKEDIN_URL },
+  { group: g.links, label: t.email, hint: "↗", action: "mail", target: `mailto:${EMAIL}` },
+  { group: g.links, label: t.downloadCv, hint: "PDF", action: "open", target: CV_URL },
+  {
+    group: g.prefs,
+    label: t.toLight,
+    altLabel: t.toDark,
+    hint: "",
+    action: "theme",
+    keywords: "theme tema dark light oscuro claro",
+  },
+  {
+    // Written in the target language, so someone who can't read this one finds it.
+    group: g.prefs,
+    label: t.switchLang,
+    hint: t.switchLangHint,
+    action: "language",
+    target: localePath(otherLang, path),
+    language: otherLang,
+    keywords: "language idioma english inglés spanish español",
+  },
+]
+---
+
+<div
+  class="overlay"
+  hidden
+  data-command-menu
+  data-items={JSON.stringify(items)}
+  data-home={localePath(lang, "/")}
+  data-empty-text={t.noResults}
+>
+  <div class="panel" role="dialog" aria-modal="true" aria-label={t.ariaMenu}>
+    <div class="search">
+      <input
+        type="text"
+        placeholder={t.paletteSearch}
+        aria-label={t.ariaSearch}
+        aria-controls="command-menu-list"
+        autocomplete="off"
+        spellcheck="false"
+        data-command-input
+      />
+      <span class="esc">esc</span>
+    </div>
+    <div class="list" id="command-menu-list" role="listbox" data-command-list></div>
+  </div>
+</div>
+
+<script>
+  import type { Lang } from "../i18n/ui"
+  import { switchLanguage } from "../scripts/lang"
+  import { scrollToId } from "../scripts/scroll"
+  import { getTheme, toggleTheme } from "../scripts/theme"
+
+  type Item = {
+    group: string
+    label: string
+    /** Theme item: label shown while the light theme is on. */
+    altLabel?: string
+    hint: string
+    action: "jump" | "go" | "open" | "mail" | "theme" | "language"
+    target?: string
+    language?: Lang
+    /** Extra words the search matches, e.g. "idioma" for the language item. */
+    keywords?: string
+  }
+
+  const overlay = document.querySelector<HTMLElement>("[data-command-menu]")!
+  const input = overlay.querySelector<HTMLInputElement>("[data-command-input]")!
+  const list = overlay.querySelector<HTMLElement>("[data-command-list]")!
+  const items: Item[] = JSON.parse(overlay.dataset.items!)
+
+  let isOpen = false
+  let active = 0
+  let results: Item[] = []
+  let returnFocus: HTMLElement | null = null
+
+  function allItems(): Item[] {
+    const light = getTheme() === "light"
+    return items.map((item) =>
+      item.action === "theme" && light ? { ...item, label: item.altLabel! } : item
+    )
+  }
+
+  function filter() {
+    const query = input.value.trim().toLowerCase()
+    const all = allItems()
+    results = query
+      ? all.filter((item) =>
+          `${item.label} ${item.group} ${item.hint} ${item.keywords ?? ""}`
+            .toLowerCase()
+            .includes(query)
+        )
+      : all
+    active = 0
+    render()
+    list.scrollTop = 0
+  }
+
+  function render() {
+    list.replaceChildren()
+
+    if (!results.length) {
+      const empty = document.createElement("p")
+      empty.className = "empty"
+      empty.textContent = overlay.dataset.emptyText!
+      list.append(empty)
+      input.removeAttribute("aria-activedescendant")
+      return
+    }
+
+    let group: HTMLElement | undefined
+    results.forEach((item, i) => {
+      if (!group || group.dataset.group !== item.group) {
+        group = document.createElement("div")
+        group.className = "group"
+        group.dataset.group = item.group
+        group.setAttribute("role", "group")
+        const heading = document.createElement("div")
+        heading.className = "group-label"
+        heading.textContent = item.group
+        group.append(heading)
+        list.append(group)
+      }
+
+      const option = document.createElement("div")
+      option.className = "item"
+      option.id = `command-item-${i}`
+      option.setAttribute("role", "option")
+      const label = document.createElement("span")
+      label.textContent = item.label
+      const hint = document.createElement("span")
+      hint.className = "hint"
+      hint.textContent = item.hint
+      option.append(label, hint)
+      option.addEventListener("click", () => run(item))
+      option.addEventListener("mousemove", () => {
+        if (active !== i) setActive(i)
+      })
+      group.append(option)
+    })
+
+    setActive(active)
+  }
+
+  function setActive(index: number, reveal = false) {
+    active = index
+    list.querySelectorAll<HTMLElement>(".item").forEach((el, i) => {
+      el.dataset.active = String(i === active)
+      el.setAttribute("aria-selected", String(i === active))
+    })
+    input.setAttribute("aria-activedescendant", `command-item-${active}`)
+    if (reveal) keepActiveVisible()
+  }
+
+  // Adjusts the list's own scrollTop; scrollIntoView would also move the page.
+  function keepActiveVisible() {
+    const el = list.querySelector<HTMLElement>('[data-active="true"]')
+    if (!el) return
+    const top = el.offsetTop
+    const bottom = top + el.offsetHeight
+    if (top < list.scrollTop + 8) list.scrollTop = Math.max(0, top - 36)
+    else if (bottom > list.scrollTop + list.clientHeight - 8)
+      list.scrollTop = bottom - list.clientHeight + 8
+  }
+
+  function open() {
+    if (isOpen) return
+    isOpen = true
+    returnFocus = document.activeElement as HTMLElement | null
+    input.value = ""
+    filter()
+    overlay.hidden = false
+    // Fill the space of the hidden scrollbar so the page doesn't shift sideways.
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    document.body.style.paddingRight = `${scrollbarWidth}px`
+    document.body.style.overflow = "hidden"
+    input.focus()
+  }
+
+  function close() {
+    if (!isOpen) return
+    isOpen = false
+    overlay.hidden = true
+    document.body.style.overflow = ""
+    document.body.style.paddingRight = ""
+    returnFocus?.focus()
+  }
+
+  function run(item: Item) {
+    close()
+    switch (item.action) {
+      case "jump":
+        // Sections only exist on the home page; elsewhere, navigate there.
+        if (!scrollToId(item.target!)) location.href = `${overlay.dataset.home}#${item.target}`
+        break
+      case "go":
+        location.href = item.target!
+        break
+      case "open":
+        window.open(item.target, "_blank", "noopener")
+        break
+      case "mail":
+        location.href = item.target!
+        break
+      case "theme":
+        toggleTheme()
+        break
+      case "language":
+        switchLanguage(item.language!, item.target!)
+        break
+    }
+  }
+
+  window.addEventListener("keydown", (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault()
+      isOpen ? close() : open()
+      return
+    }
+    if (!isOpen) return
+
+    const count = results.length
+    switch (event.key) {
+      case "Escape":
+        event.preventDefault()
+        close()
+        break
+      case "ArrowDown":
+        event.preventDefault()
+        if (count) setActive((active + 1) % count, true)
+        break
+      case "ArrowUp":
+        event.preventDefault()
+        if (count) setActive((active - 1 + count) % count, true)
+        break
+      case "Enter":
+        event.preventDefault()
+        if (results[active]) run(results[active])
+        break
+      case "Tab":
+        // The input is the only focusable element; keep focus inside the dialog.
+        event.preventDefault()
+        break
+    }
+  })
+
+  input.addEventListener("input", filter)
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) close()
+  })
+
+  document
+    .querySelectorAll("[data-open-command-menu]")
+    .forEach((button) => button.addEventListener("click", open))
+</script>
+
+<style>
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 14vh 16px 16px;
+    background: var(--overlay);
+  }
+
+  .overlay[hidden] {
+    display: none;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 560px;
+    overflow: hidden;
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 52px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+  }
+
+  input::placeholder {
+    color: var(--muted);
+  }
+
+  .esc {
+    flex-shrink: 0;
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--muted);
+  }
+
+  .list {
+    position: relative;
+    max-height: min(400px, 56vh);
+    overflow-y: auto;
+    padding: 6px;
+  }
+
+  /* Children are created at runtime, so they need :global to get styled. */
+  .list :global(.group) {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 4px;
+  }
+
+  .list :global(.group-label) {
+    padding: 10px 10px 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .list :global(.item) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 40px;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .list :global(.item[data-active="true"]) {
+    background: var(--active);
+  }
+
+  .list :global(.hint) {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .list :global(.empty) {
+    padding: 32px 10px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--muted);
+  }
+</style>
