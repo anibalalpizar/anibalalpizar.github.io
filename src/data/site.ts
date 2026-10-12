@@ -140,7 +140,7 @@ export const projects: Project[] = [
   {
     id: "json-to-xml",
     name: "JSON to XML",
-    kind: "web",
+    kind: "tool",
     category: "tools",
     featured: 3,
     stack: ["Next.js", "Tailwind CSS", "shadcn/ui", "TypeScript"],
@@ -211,7 +211,7 @@ export const projects: Project[] = [
   {
     id: "terminal-portfolio-json",
     name: "Terminal Portfolio JSON",
-    kind: "tool",
+    kind: "web",
     category: "web",
     stack: ["Next.js", "React", "Tailwind CSS", "TypeScript"],
     description: {
