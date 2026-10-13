@@ -322,4 +322,4 @@ export const stack: { label: Localized; items: string[] }[] = [
   },
 ]
 
-export type Page = "home" | "case" | "projects"
+export type Page = "home" | "case" | "projects" | "not-found"

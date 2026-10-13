@@ -25,10 +25,18 @@ const spanishHref = localePath("es", path)
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="canonical" href={urlFor(lang)} />
-    <link rel="alternate" hreflang="en" href={urlFor("en")} />
-    <link rel="alternate" hreflang="es" href={urlFor("es")} />
-    <link rel="alternate" hreflang="x-default" href={urlFor("en")} />
+    {
+      page === "not-found" ? (
+        <meta name="robots" content="noindex" />
+      ) : (
+        <>
+          <link rel="canonical" href={urlFor(lang)} />
+          <link rel="alternate" hreflang="en" href={urlFor("en")} />
+          <link rel="alternate" hreflang="es" href={urlFor("es")} />
+          <link rel="alternate" hreflang="x-default" href={urlFor("en")} />
+        </>
+      )
+    }
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content="/logo.jpg" />
@@ -47,7 +55,7 @@ const spanishHref = localePath("es", path)
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap"
     />
-    <script is:inline define:vars={{ lang, spanishHref }}>
+    <script is:inline define:vars={{ lang, spanishHref, page }}>
       try {
         // Dark is the default; only an explicit choice switches to light.
         // Key must match STORAGE_KEY in src/scripts/theme.ts.
@@ -58,7 +66,13 @@ const spanishHref = localePath("es", path)
         // Key must match LANG_KEY in src/scripts/lang.ts.
         var chosen = localStorage.getItem("lang")
         var prefersSpanish = chosen === "es" || (!chosen && navigator.language.toLowerCase().startsWith("es"))
-        if (lang === "en" && prefersSpanish) {
+        if (page === "not-found") {
+          // GitHub Pages serves the English 404 for every missing path, /es/ ones
+          // included; hand the broken path to the Spanish 404 so it can show it.
+          if (lang === "en" && (prefersSpanish || location.pathname.startsWith("/es/"))) {
+            location.replace(spanishHref + "?path=" + encodeURIComponent(location.pathname))
+          }
+        } else if (lang === "en" && prefersSpanish) {
           location.replace(spanishHref + location.search + location.hash)
         }
       } catch {}

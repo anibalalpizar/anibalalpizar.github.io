@@ -91,6 +91,11 @@ const en = {
   toDark: "Switch to dark theme",
   switchLang: "Cambiar a español",
   switchLangHint: "ES",
+  notFoundCode: "Error 404",
+  notFoundTitle: "Page not found.",
+  notFoundText: "There’s nothing at this address. The page may have moved, or the link may be wrong.",
+  notFoundPath: "Requested",
+  notFoundHome: "Back to home",
 }
 
 // Typed against `en` so a missing or extra key fails the build.
@@ -162,6 +167,11 @@ const es: typeof en = {
   toDark: "Cambiar a tema oscuro",
   switchLang: "Switch to English",
   switchLangHint: "EN",
+  notFoundCode: "Error 404",
+  notFoundTitle: "Página no encontrada.",
+  notFoundText: "No hay nada en esta dirección. Puede que la página se haya movido o que el enlace esté mal.",
+  notFoundPath: "Dirección",
+  notFoundHome: "Volver al inicio",
 }
 
 export const ui = { en, es }

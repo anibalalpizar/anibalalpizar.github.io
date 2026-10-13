@@ -1,0 +1,139 @@
+---
+import Marks from "../Marks.astro"
+import PageBar from "../internal/PageBar.astro"
+import PageFooter from "../internal/PageFooter.astro"
+import Layout from "../../layouts/Layout.astro"
+import { localePath, ui, type Lang } from "../../i18n/ui"
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+const home = localePath(lang, "/")
+---
+
+<Layout lang={lang} title={`${t.notFoundTitle.replace(/\.$/, "")} — Aníbal`} path="/404" page="not-found">
+  <main class="page">
+    <section id="top" class="hero">
+      <PageBar backHref={home} backLabel={t.backHome} meta={t.notFoundCode} />
+      <h1>{t.notFoundTitle}</h1>
+      <p class="text">{t.notFoundText}</p>
+      <div class="actions">
+        <a href={home} class="button primary">{t.notFoundHome}</a>
+        <a href={localePath(lang, "/projects")} class="button secondary">{t.allProjects}</a>
+      </div>
+    </section>
+
+    <section class="path" hidden data-missing>
+      <Marks />
+      <span class="path-label">{t.notFoundPath}</span>
+      <code class="path-value" data-missing-path></code>
+    </section>
+
+    <PageFooter lang={lang} />
+  </main>
+</Layout>
+
+<script>
+  // Show the address that wasn't found. The Spanish 404 gets it as ?path=,
+  // because it is reached by a redirect from the English one.
+  const path = new URLSearchParams(location.search).get("path") ?? location.pathname
+  const row = document.querySelector<HTMLElement>("[data-missing]")
+  if (row && !/^\/(es\/)?404(\/|\.html)?$/.test(path)) {
+    row.querySelector("[data-missing-path]")!.textContent = path
+    row.hidden = false
+  }
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    padding: clamp(84px, 11vw, 136px) var(--px) clamp(56px, 8vw, 104px);
+  }
+
+  h1 {
+    margin-left: -0.04em;
+    font-size: clamp(52px, 10vw, 128px);
+    font-weight: 600;
+    letter-spacing: -0.065em;
+    line-height: 0.88;
+    text-wrap: balance;
+    hyphens: auto;
+  }
+
+  .text {
+    margin-top: clamp(28px, 4vw, 44px);
+    max-width: 520px;
+    font-size: clamp(16px, 1.6vw, 19px);
+    line-height: 1.55;
+    opacity: var(--dim);
+    text-wrap: pretty;
+  }
+
+  .actions {
+    margin-top: clamp(28px, 4vw, 44px);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .button {
+    height: 40px;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .primary {
+    background: var(--fg);
+    color: var(--bg);
+    transition: opacity 150ms ease;
+  }
+
+  .primary:hover {
+    opacity: 0.84;
+  }
+
+  .secondary {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    transition: background-color 150ms ease;
+  }
+
+  .secondary:hover {
+    background: var(--hover);
+  }
+
+  .path {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 16px;
+    padding: 20px var(--px);
+    border-top: 1px solid var(--line);
+  }
+
+  .path[hidden] {
+    display: none;
+  }
+
+  .path-label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: var(--dim);
+  }
+
+  .path-value {
+    min-width: 0;
+    font-family: inherit;
+    font-size: 15px;
+    overflow-wrap: anywhere;
+  }
+</style>
