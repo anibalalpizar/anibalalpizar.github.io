@@ -1,0 +1,111 @@
+---
+import Figure, { type Props as FigureProps } from "./Figure.astro"
+import { langFromPath, ui } from "../../i18n/ui"
+
+interface Props {
+  /** "A", "B"… shown as "Detail A". */
+  letter: string
+  title: string
+  /** Optional figure at the bottom of the box. */
+  figure?: Omit<FigureProps, "inset">
+}
+
+const { letter, title, figure } = Astro.props
+const t = ui[langFromPath(Astro.url.pathname)]
+---
+
+<div class="row">
+  <span></span>
+  <aside class="detail">
+    <span class="corner tl" aria-hidden="true"></span>
+    <span class="corner tr" aria-hidden="true"></span>
+    <span class="corner bl" aria-hidden="true"></span>
+    <span class="corner br" aria-hidden="true"></span>
+    <div class="label">{t.detail} {letter}</div>
+    <div class="body">
+      <h3>{title}</h3>
+      <slot />
+    </div>
+    {figure && <Figure {...figure} inset />}
+  </aside>
+</div>
+
+<style>
+  .row {
+    display: grid;
+    grid-template-columns: minmax(56px, 120px) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+    padding: clamp(36px, 5vw, 56px) var(--px);
+    border-top: 1px solid var(--line);
+  }
+
+  .detail {
+    position: relative;
+    min-width: 0;
+    border: 1px solid var(--line);
+  }
+
+  .corner {
+    position: absolute;
+    z-index: 2;
+    width: 11px;
+    height: 11px;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--cross), var(--cross)) center / 1px 100% no-repeat,
+      linear-gradient(var(--cross), var(--cross)) center / 100% 1px no-repeat;
+  }
+
+  .tl,
+  .tr {
+    top: -6px;
+  }
+
+  .bl,
+  .br {
+    bottom: -6px;
+  }
+
+  .tl,
+  .bl {
+    left: -6px;
+  }
+
+  .tr,
+  .br {
+    right: -6px;
+  }
+
+  .label {
+    padding: 12px clamp(18px, 3vw, 28px);
+    border-bottom: 1px solid var(--line);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: var(--dim);
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: clamp(20px, 3vw, 28px);
+  }
+
+  h3 {
+    font-size: clamp(18px, 2vw, 22px);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  .body :global(p) {
+    max-width: 66ch;
+    line-height: 1.7;
+    opacity: var(--dim);
+    text-wrap: pretty;
+    hyphens: auto;
+  }
+</style>

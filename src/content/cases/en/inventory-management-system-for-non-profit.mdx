@@ -1,0 +1,74 @@
+---
+exp: inventory
+path: /2023/inventory-management-system-for-non-profit
+date: "2023-03-26"
+titleHref: https://hogarbuensamaritano.org/
+title:
+  before: "Custom Software Development for "
+  link: "Hogar El Buen Samaritano"
+  after: ": A Technical Summary"
+lead: "This project involved the creation of a desktop application for inventory management at the Hogar El Buen Samaritano Association. This development was part of a university community service project (TCU) and was carried out by me and a team member. The main goal was to optimize the manual inventory control process, reduce errors, and improve the operational efficiency of the organization."
+facts:
+  - key: client
+    value: "Hogar El Buen Samaritano"
+  - key: stack
+    value: "C# · SQLite · Windows Forms"
+---
+
+<Section title="Requirements Analysis and Technology Selection">
+
+From the beginning of the project, a thorough analysis of user requirements was conducted to understand the specific needs of the Association. Based on this analysis, technologies were selected that offered a balance between robustness and ease of maintenance. We opted to use C# for developing the desktop application due to its native integration with Windows, and SQLite as the database management system for its lightweight and simple configuration.
+
+</Section>
+
+<Section title="User Interface Design">
+
+One of the main challenges was designing an intuitive and accessible user interface for the association’s staff, who did not necessarily have advanced technical knowledge. We implemented a user-centered approach, using minimalist design principles to reduce the learning curve and increase system adoption. The interface was built using Windows Forms, which offered the necessary flexibility to customize the user experience according to the organization’s needs.
+
+</Section>
+
+<Figure
+  src="/2023/inventory-management-system-for-non-profit/diagram.jpg"
+  width={1376}
+  height={2400}
+  tone="dark"
+  caption="From challenges to a user-friendly design"
+/>
+
+<Section title="State Management and Data Synchronization">
+
+To ensure data consistency across different modules of the application, a state management system was implemented that centralizes data handling in a single source of truth. Additionally, a data synchronization mechanism was developed to allow operation in offline mode, storing changes locally and synchronizing them with the central database once the connection is restored.
+
+</Section>
+
+<Section title="Repository Pattern Implementation">
+
+To decouple data access logic from business logic, the Repository pattern was implemented. This pattern provided effective abstraction between the database and the application, facilitating changes in the persistence layer without affecting other parts of the system. The implementation of the Repository pattern also made unit testing easier, allowing the use of mock objects to simulate database interactions.
+
+</Section>
+
+<Figure
+  src="/2023/inventory-management-system-for-non-profit/diagram-db.jpg"
+  width={489}
+  height={171}
+  caption="The Repository pattern"
+  source="https://www.veloxcore.com/repository-pattern-csharp-entity-framework/"
+/>
+
+<Section title="Results and Benefits">
+
+The development of this application not only met the stated objectives but also brought unexpected benefits. The automation of the inventory process significantly reduced response times during internal audits and improved the accuracy of financial reports. The association’s staff reported a decrease in workload related to inventory management, allowing them to focus more on the organization’s core activities.
+
+<Terms>
+  <Term name="Time Optimization">Digitizing the inventory allowed for a reduction in the time spent on management, increasing operational efficiency.</Term>
+  <Term name="Increased Accuracy">Automating the control process reduced common errors in manual inventory handling.</Term>
+  <Term name="Audit Improvements">The accuracy and accessibility of data facilitated internal audit processes and improved transparency.</Term>
+</Terms>
+
+</Section>
+
+<Section title="Conclusions and Recommendations">
+
+The experience gained during this project highlighted the importance of good planning and the proper selection of tools and technologies. The modularity of the code, along with the abstraction of data access logic, made the system easily maintainable and scalable. We recommend that future similar projects consider the importance of involving end users throughout the development process to ensure the final solution meets their expectations and needs.
+
+</Section>

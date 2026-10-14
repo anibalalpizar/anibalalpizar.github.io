@@ -1,8 +1,8 @@
 ---
-import { caseStudies } from "../data/cases"
 import {
   CV_URL,
   EMAIL,
+  experience,
   GITHUB_URL,
   LINKEDIN_URL,
   featuredProjects,
@@ -32,13 +32,15 @@ const items = [
     action: "jump",
     target: id,
   })),
-  ...caseStudies.map((study) => ({
-    group: g.cases,
-    label: L(study.job.company, lang),
-    hint: String(new Date(study.job.endDate ?? study.job.startDate).getFullYear()),
-    action: "go",
-    target: localePath(lang, study.path),
-  })),
+  ...experience
+    .filter((job) => job.casePath)
+    .map((job) => ({
+      group: g.cases,
+      label: L(job.company, lang),
+      hint: String(new Date(job.endDate ?? job.startDate).getFullYear()),
+      action: "go",
+      target: localePath(lang, job.casePath!),
+    })),
   {
     group: g.projects,
     label: t.allProjects,

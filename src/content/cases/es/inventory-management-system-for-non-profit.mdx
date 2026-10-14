@@ -1,0 +1,74 @@
+---
+exp: inventory
+path: /2023/inventory-management-system-for-non-profit
+date: "2023-03-26"
+titleHref: https://hogarbuensamaritano.org/
+title:
+  before: "Desarrollo de software a la medida para "
+  link: "Hogar El Buen Samaritano"
+  after: ": resumen técnico"
+lead: "Este proyecto consistió en crear una aplicación de escritorio para la gestión del inventario de la Asociación Hogar El Buen Samaritano. El desarrollo formó parte de un Trabajo Comunal Universitario (TCU) y lo realicé junto con un compañero de equipo. El objetivo principal era optimizar el control manual del inventario, reducir errores y mejorar la eficiencia operativa de la organización."
+facts:
+  - key: client
+    value: "Hogar El Buen Samaritano"
+  - key: stack
+    value: "C# · SQLite · Windows Forms"
+---
+
+<Section title="Análisis de requerimientos y selección de tecnologías">
+
+Desde el inicio del proyecto hicimos un análisis detallado de los requerimientos de los usuarios para entender las necesidades específicas de la Asociación. Con base en ese análisis, elegimos tecnologías que ofrecieran un equilibrio entre robustez y facilidad de mantenimiento: C# para la aplicación de escritorio, por su integración nativa con Windows, y SQLite como sistema de base de datos, por ser liviano y fácil de configurar.
+
+</Section>
+
+<Section title="Diseño de la interfaz de usuario">
+
+Uno de los principales desafíos fue diseñar una interfaz intuitiva y accesible para el personal de la asociación, que no necesariamente tenía conocimientos técnicos avanzados. Aplicamos un enfoque centrado en el usuario, con principios de diseño minimalista para reducir la curva de aprendizaje y aumentar la adopción del sistema. La interfaz se construyó con Windows Forms, que daba la flexibilidad necesaria para adaptar la experiencia a las necesidades de la organización.
+
+</Section>
+
+<Figure
+  src="/2023/inventory-management-system-for-non-profit/diagram.jpg"
+  width={1376}
+  height={2400}
+  tone="dark"
+  caption="De los desafíos a un diseño fácil de usar"
+/>
+
+<Section title="Gestión de estado y sincronización de datos">
+
+Para asegurar la consistencia de los datos entre los distintos módulos de la aplicación, implementamos un sistema de gestión de estado que centraliza el manejo de los datos en una única fuente de verdad. Además, desarrollamos un mecanismo de sincronización que permite trabajar sin conexión: los cambios se guardan localmente y se sincronizan con la base de datos central cuando se restablece la conexión.
+
+</Section>
+
+<Section title="Implementación del patrón Repository">
+
+Para desacoplar la lógica de acceso a datos de la lógica de negocio, implementamos el patrón Repository. Este patrón ofreció una abstracción eficaz entre la base de datos y la aplicación, y facilitó los cambios en la capa de persistencia sin afectar otras partes del sistema. También simplificó las pruebas unitarias, al permitir usar objetos simulados (mocks) para reproducir las interacciones con la base de datos.
+
+</Section>
+
+<Figure
+  src="/2023/inventory-management-system-for-non-profit/diagram-db.jpg"
+  width={489}
+  height={171}
+  caption="El patrón Repository"
+  source="https://www.veloxcore.com/repository-pattern-csharp-entity-framework/"
+/>
+
+<Section title="Resultados y beneficios">
+
+La aplicación no solo cumplió los objetivos planteados, sino que también trajo beneficios inesperados. La automatización del inventario redujo significativamente los tiempos de respuesta en las auditorías internas y mejoró la precisión de los informes financieros. El personal de la asociación reportó una menor carga de trabajo en la gestión del inventario, lo que le permitió dedicar más tiempo a las actividades centrales de la organización.
+
+<Terms>
+  <Term name="Optimización del tiempo">Digitalizar el inventario redujo el tiempo dedicado a su gestión y aumentó la eficiencia operativa.</Term>
+  <Term name="Mayor precisión">Automatizar el control redujo los errores comunes del manejo manual del inventario.</Term>
+  <Term name="Mejores auditorías">La precisión y la accesibilidad de los datos facilitaron las auditorías internas y mejoraron la transparencia.</Term>
+</Terms>
+
+</Section>
+
+<Section title="Conclusiones y recomendaciones">
+
+La experiencia de este proyecto dejó clara la importancia de una buena planificación y de elegir bien las herramientas y tecnologías. La modularidad del código, junto con la abstracción del acceso a datos, hizo que el sistema fuera fácil de mantener y de escalar. Para proyectos similares, recomendamos involucrar a los usuarios finales durante todo el desarrollo, para asegurar que la solución final responda a sus expectativas y necesidades.
+
+</Section>

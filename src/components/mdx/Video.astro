@@ -1,21 +1,20 @@
 ---
-import { L, ui, type Lang, type Localized } from "../../i18n/ui"
+import { langFromPath, ui } from "../../i18n/ui"
 
 interface Props {
+  /** The id in a YouTube URL: youtube.com/watch?v=<id>. */
   youtubeId: string
-  caption: Localized
-  number: string
-  lang: Lang
+  caption: string
 }
 
-const { youtubeId, caption, number, lang } = Astro.props
-const t = ui[lang]
+const { youtubeId, caption } = Astro.props
+const t = ui[langFromPath(Astro.url.pathname)]
 const watchUrl = `https://www.youtube.com/watch?v=${youtubeId}`
 ---
 
 <figure class="figure">
   <div class="plate">
-    <div class="screen" data-video={youtubeId} data-title={L(caption, lang)}>
+    <div class="screen" data-video={youtubeId} data-title={caption}>
       <img
         src={`https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`}
         alt=""
@@ -31,8 +30,8 @@ const watchUrl = `https://www.youtube.com/watch?v=${youtubeId}`
   </div>
   <figcaption>
     <span class="label">
-      <span class="number">{t.fig} {number}</span>
-      <span>{L(caption, lang)}</span>
+      <span class="number">{t.fig} <span class="count"></span></span>
+      <span>{caption}</span>
     </span>
     <a href={watchUrl} target="_blank" rel="noreferrer" class="watch">{t.watch}</a>
   </figcaption>
@@ -54,9 +53,15 @@ const watchUrl = `https://www.youtube.com/watch?v=${youtubeId}`
 </script>
 
 <style>
+  /* Shares the figure counter with Figure.astro, so the video gets the next number. */
   .figure {
     margin: 0;
     border-top: 1px solid var(--line);
+    counter-increment: figure;
+  }
+
+  .count::before {
+    content: counter(figure, decimal-leading-zero);
   }
 
   .plate {

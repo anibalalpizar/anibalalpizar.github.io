@@ -1,65 +1,65 @@
 ---
+import type { CollectionEntry } from "astro:content"
 import Marks from "../Marks.astro"
-import Figure from "../internal/Figure.astro"
 import PageBar from "../internal/PageBar.astro"
 import PageFooter from "../internal/PageFooter.astro"
-import VideoFigure from "../internal/VideoFigure.astro"
+import Detail from "../mdx/Detail.astro"
+import Figure from "../mdx/Figure.astro"
+import Section from "../mdx/Section.astro"
+import Term from "../mdx/Term.astro"
+import Terms from "../mdx/Terms.astro"
+import Video from "../mdx/Video.astro"
 import Layout from "../../layouts/Layout.astro"
-import { caseStudies, type Figure as FigureData } from "../../data/cases"
+import { experience } from "../../data/site"
 import { L, localePath, ui, type Lang } from "../../i18n/ui"
 import { formatDate, timeAgo } from "../../utils/dates"
 
 interface Props {
   lang: Lang
-  /** Path shared by both languages, e.g. "/2024/internship-at-tech-solutions". */
-  path: string
+  entry: CollectionEntry<"cases">
 }
 
-const { lang, path } = Astro.props
+const { lang, entry } = Astro.props
+const { exp, path, date, titleHref, title, lead, facts } = entry.data
+const { Content } = await entry.render()
 const t = ui[lang]
 const two = (n: number) => String(n).padStart(2, "0")
 
-const index = caseStudies.findIndex((study) => study.path === path)
-const study = caseStudies[index]
-const { before, link, after } = L(study.title, lang)
+// Case order follows the Experience rows that have a case study.
+const studies = experience.filter((job) => job.casePath)
+const index = studies.findIndex((job) => job.id === exp)
+const job = studies[index]
+if (!job) throw new Error(`${entry.id}: no Experience row with id "${exp}" and a casePath`)
+
 const neighbor = (offset: number) => {
-  const other = caseStudies[index + offset]
-  return other && { name: L(other.job.company, lang), href: localePath(lang, other.path) }
+  const other = studies[index + offset]
+  return other && { name: L(other.company, lang), href: localePath(lang, other.casePath!) }
 }
 const prev = neighbor(-1)
 const next = neighbor(1)
 
 const cells = [
-  { label: t.date, value: formatDate(study.date, lang), sub: timeAgo(study.date, lang), date: study.date },
-  { label: t.role, value: L(study.job.role, lang), sub: L(study.job.note, lang) },
-  ...study.facts.map((fact) => ({ label: t[fact.key], value: L(fact.value, lang), sub: "" })),
+  { label: t.date, value: formatDate(date, lang), sub: timeAgo(date, lang), date },
+  { label: t.role, value: L(job.role, lang), sub: L(job.note, lang) },
+  ...facts.map((fact) => ({ label: t[fact.key], value: fact.value, sub: "" })),
 ]
 
-// Figures are numbered in reading order, including Detail figures and the video.
-let figureCount = 0
-const numbered = (figure: FigureData) => ({ figure, number: two(++figureCount) })
-const sections = study.sections.map((section, i) => ({
-  ...section,
-  id: `section-${two(i + 1)}`,
-  index: two(i + 1),
-  figures: (section.figures ?? []).map(numbered),
-  detailFigure: section.detail?.figure && numbered(section.detail.figure),
-  videoNumber: section.video && two(++figureCount),
-}))
+// Components available inside the MDX files without importing them.
+const components = { Section, Figure, Detail, Terms, Term, Video }
 ---
 
-<Layout lang={lang} title={`${before}${link}${after} — Aníbal`} path={path} page="case">
-  <main class="page">
+<Layout lang={lang} title={`${title.before}${title.link}${title.after} — Aníbal`} path={path} page="case">
+  <main class="page case">
     <section id="top" class="hero">
       <PageBar
         backHref={localePath(lang, "/#experience")}
         backLabel={t.backToExperience}
-        meta={`${t.caseStudy} ${two(index + 1)} / ${two(caseStudies.length)}`}
+        meta={`${t.caseStudy} ${two(index + 1)} / ${two(studies.length)}`}
       />
       <h1>
-        {before}<a href={study.titleHref} target="_blank" rel="noreferrer">{link}</a>{after}
+        {title.before}<a href={titleHref} target="_blank" rel="noreferrer">{title.link}</a>{title.after}
       </h1>
-      <p class="lead">{L(study.lead, lang)}</p>
+      <p class="lead">{lead}</p>
     </section>
 
     <section class="facts">
@@ -83,76 +83,7 @@ const sections = study.sections.map((section, i) => ({
       </div>
     </section>
 
-    {
-      sections.map((section) => (
-        <section id={section.id} class="section">
-          <Marks />
-          <div class="grid">
-            <span class="index">{section.index}</span>
-            <div class="body">
-              <h2>{L(section.title, lang)}</h2>
-              {section.blocks.map((block) =>
-                "p" in block ? (
-                  <p class="text">{L(block.p, lang)}</p>
-                ) : (
-                  <dl class="list">
-                    {block.list.map((item) => (
-                      <div class="item">
-                        <dt>
-                          <span class="bullet" aria-hidden="true" />
-                          <span>{L(item.term, lang)}</span>
-                        </dt>
-                        <dd>{L(item.text, lang)}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                )
-              )}
-            </div>
-          </div>
-
-          {section.figures.map(({ figure, number }) => (
-            <Figure figure={figure} number={number} lang={lang} />
-          ))}
-
-          {section.detail && (
-            <div class="grid detail-row">
-              <span />
-              <aside class="detail">
-                <span class="corner tl" aria-hidden="true" />
-                <span class="corner tr" aria-hidden="true" />
-                <span class="corner bl" aria-hidden="true" />
-                <span class="corner br" aria-hidden="true" />
-                <div class="detail-label">
-                  {t.detail} {section.detail.letter}
-                </div>
-                <div class="detail-body">
-                  <h3>{L(section.detail.title, lang)}</h3>
-                  <p class="text">{L(section.detail.text, lang)}</p>
-                </div>
-                {section.detailFigure && (
-                  <Figure
-                    figure={section.detailFigure.figure}
-                    number={section.detailFigure.number}
-                    lang={lang}
-                    inset
-                  />
-                )}
-              </aside>
-            </div>
-          )}
-
-          {section.video && (
-            <VideoFigure
-              youtubeId={section.video.youtubeId}
-              caption={section.video.caption}
-              number={section.videoNumber!}
-              lang={lang}
-            />
-          )}
-        </section>
-      ))
-    }
+    <Content components={components} />
 
     <nav class="pager" aria-label={t.caseStudy}>
       <Marks />
@@ -189,6 +120,11 @@ const sections = study.sections.map((section, i) => ({
 </script>
 
 <style>
+  /* Section and Fig. numbers are CSS counters, incremented by the MDX components. */
+  .case {
+    counter-reset: section figure;
+  }
+
   .hero {
     position: relative;
     padding: clamp(84px, 11vw, 136px) var(--px) clamp(44px, 6vw, 72px);
@@ -227,7 +163,6 @@ const sections = study.sections.map((section, i) => ({
   }
 
   .facts,
-  .section,
   .pager {
     position: relative;
     border-top: 1px solid var(--line);
@@ -268,156 +203,6 @@ const sections = study.sections.map((section, i) => ({
   .cell-sub {
     font-size: 12px;
     opacity: var(--dim);
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: minmax(56px, 120px) minmax(0, 1fr);
-    gap: 16px;
-    align-items: baseline;
-    padding: clamp(40px, 6vw, 64px) var(--px) clamp(36px, 5vw, 56px);
-  }
-
-  .index {
-    font-size: 13px;
-    opacity: var(--dim);
-  }
-
-  .body {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  h2 {
-    max-width: 760px;
-    font-size: clamp(22px, 2.6vw, 28px);
-    font-weight: 600;
-    letter-spacing: -0.04em;
-    line-height: 1.15;
-    text-wrap: balance;
-    hyphens: auto;
-  }
-
-  .text {
-    max-width: 66ch;
-    line-height: 1.7;
-    opacity: var(--dim);
-    text-wrap: pretty;
-    hyphens: auto;
-  }
-
-  .list {
-    margin: 8px 0 0;
-    max-width: 860px;
-    display: flex;
-    flex-direction: column;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .item {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 24px;
-    padding: 16px 0;
-    border-top: 1px solid var(--line);
-  }
-
-  dt {
-    flex: 0 0 240px;
-    display: flex;
-    gap: 12px;
-    font-weight: 500;
-    line-height: 1.5;
-  }
-
-  /* The system's "+" mark, as a bullet. */
-  .bullet {
-    flex: 0 0 9px;
-    width: 9px;
-    height: 9px;
-    margin-top: 7px;
-    opacity: var(--dim);
-    background:
-      linear-gradient(currentColor, currentColor) center / 1px 100% no-repeat,
-      linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat;
-  }
-
-  dd {
-    flex: 1 1 320px;
-    min-width: 0;
-    margin: 0;
-    line-height: 1.6;
-    opacity: var(--dim);
-    text-wrap: pretty;
-  }
-
-  .detail-row {
-    align-items: start;
-    padding: clamp(36px, 5vw, 56px) var(--px);
-    border-top: 1px solid var(--line);
-  }
-
-  .detail {
-    position: relative;
-    min-width: 0;
-    border: 1px solid var(--line);
-  }
-
-  .corner {
-    position: absolute;
-    z-index: 2;
-    width: 11px;
-    height: 11px;
-    pointer-events: none;
-    background:
-      linear-gradient(var(--cross), var(--cross)) center / 1px 100% no-repeat,
-      linear-gradient(var(--cross), var(--cross)) center / 100% 1px no-repeat;
-  }
-
-  .tl,
-  .tr {
-    top: -6px;
-  }
-
-  .bl,
-  .br {
-    bottom: -6px;
-  }
-
-  .tl,
-  .bl {
-    left: -6px;
-  }
-
-  .tr,
-  .br {
-    right: -6px;
-  }
-
-  .detail-label {
-    padding: 12px clamp(18px, 3vw, 28px);
-    border-bottom: 1px solid var(--line);
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    opacity: var(--dim);
-  }
-
-  .detail-body {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: clamp(20px, 3vw, 28px);
-  }
-
-  h3 {
-    font-size: clamp(18px, 2vw, 22px);
-    font-weight: 600;
-    letter-spacing: -0.03em;
-    line-height: 1.25;
-    text-wrap: balance;
   }
 
   .pager {

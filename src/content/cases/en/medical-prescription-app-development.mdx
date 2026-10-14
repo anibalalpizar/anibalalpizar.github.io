@@ -1,0 +1,91 @@
+---
+exp: medical
+path: /2022/medical-prescription-app-development
+date: "2022-12-15"
+titleHref: https://www.levelsolo.io/
+title:
+  before: "Medical Prescription App Development for "
+  link: "Lvel Solo"
+  after: ": A Technical Overview"
+lead: "Desktop application for managing medical prescriptions, targeting a client in Chile, a healthcare professional who previously relied on manual processes for creating prescriptions. The main objective was to optimize these processes, reducing inefficiencies and improving patient care."
+facts:
+  - key: client
+    value: "Lvel Solo · Chile"
+---
+
+<Section title="Initial Challenges and Problems">
+
+Prior to the development of the app, the client was facing several challenges. The manual process was not only slow, but also prone to human error, which could compromise the quality of patient care. The need to automate prescription creation and delivery, as well as improve management of patient and user data, was evident from the start.
+
+</Section>
+
+<Figure
+  src="/2022/medical-prescription-app-development/initial-diagram.jpg"
+  width={657}
+  height={539}
+  caption="Use-case diagram — initial cycle"
+/>
+
+<Section title="Choosing Architecture and Design Patterns">
+
+I opted for a 3-Layer Architecture for this project, using design patterns such as Business Logic Layer (BLL) and Data Access Layer (DAL). This choice was not arbitrary; the separation of the business logic and data access layers was crucial to keeping the code modular and maintainable. With this structure, any changes to the business logic or the database could be handled in isolation, minimizing the impact on other parts of the system. Furthermore, this architecture allows for greater flexibility to scale the application in the future, by allowing different components to be developed and updated independently.
+
+</Section>
+
+<Figure
+  src="/2022/medical-prescription-app-development/3-layers-diagram.jpg"
+  width={1366}
+  height={890}
+  tone="light"
+  caption="Sequence diagram — generating and emailing a report"
+/>
+
+<Section title="Factory Pattern Implementation">
+
+In addition, I implemented the Factory pattern to manage the creation of objects within the application. This pattern proved to be essential in simplifying the addition of new functionalities without the need to modify existing code. Implementing the Factory pattern facilitated the integration of new features in a fluid manner without affecting the stability of the system. This flexibility was key to the success of the project, allowing the application to evolve according to the client’s changing needs without compromising its stability.
+
+</Section>
+
+<Figure
+  src="/2022/medical-prescription-app-development/factory-diagram.jpg"
+  width={1920}
+  height={1200}
+  caption="The Factory Method, illustrated"
+  source="https://refactoring.guru/design-patterns/factory-method"
+/>
+
+<Section title="Results and Benefits">
+
+The development of this application brought with it multiple benefits. Automating the creation of prescriptions significantly reduced the time needed to complete this task, allowing the client to focus on other critical areas of their medical practice. Digitizing the process minimized human errors associated with manual methods, improving the accuracy of the prescriptions issued. In addition, more efficient and accurate management of prescriptions resulted in better patient care, with faster turnaround times and greater overall satisfaction. The implementation of this application not only optimized the client’s internal processes, but also contributed to a better experience for patients, reflecting a positive impact on the quality of the service offered.
+
+<Terms>
+  <Term name="Increased Efficiency">Automating prescription creation significantly reduced the time required to complete this task, allowing the client to focus on other critical areas of their medical practice.</Term>
+  <Term name="Error Reduction">Digitizing the process minimized human errors associated with manual methods, which in turn improved the accuracy of the prescriptions issued.</Term>
+  <Term name="Improved Patient Care">More efficient and accurate prescription management resulted in better patient care, with faster turnaround times and greater overall satisfaction.</Term>
+</Terms>
+
+</Section>
+
+<Section title="Key Learnings">
+
+The development process was a valuable learning experience. Modularity turned out to be one of the most important aspects of the project; utilizing BLLs and DALs not only made code maintenance easier, but also allowed for scalability that would have been difficult to achieve with a monolithic structure. I also learned the importance of designing with the end user in mind. Although technical solutions were crucial, customer adoption was highly dependent on the user-friendliness of the interface. This experience reaffirmed the need to balance technical complexity with simplicity in user interface design. Implementing a modular and flexible architecture allowed for not only an efficient solution for the present, but also a solid foundation for future extensions and improvements.
+
+</Section>
+
+<Figure
+  src="/2022/medical-prescription-app-development/evidence-1.png"
+  width={881}
+  height={516}
+  caption="Login screen of the application"
+/>
+
+<Section title="Future Improvements">
+
+Although the project was successful, there is always room for improvement. An integration with electronic health record (EHR) systems would be a valuable addition, allowing for direct synchronization with patient medical records and further improving the efficiency of the system. Additionally, collecting and analyzing user feedback will be key to continuing to refine and improve the application, ensuring that it continues to meet the needs of the client and their patients. Implementing a feedback system will allow for areas of improvement to be identified and the application to be adapted to the changing demands of the medical environment.
+
+<Terms>
+  <Term name="Integration with EHR Systems">A future iteration could include integration with electronic health record (EHR) systems, allowing for direct synchronization with patient medical records.</Term>
+  <Term name="User Feedback Analysis">Collecting and analyzing user feedback will be key to refining and improving the application, ensuring that it continues to meet the needs of the client and their patients.</Term>
+</Terms>
+
+</Section>

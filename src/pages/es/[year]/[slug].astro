@@ -1,15 +1,16 @@
 ---
+import { getCollection } from "astro:content"
 import CasePage from "../../../components/pages/CasePage.astro"
-import { caseStudies } from "../../../data/cases"
 
-export function getStaticPaths() {
-  return caseStudies.map(({ path }) => {
-    const [, year, slug] = path.split("/")
-    return { params: { year, slug } }
+export async function getStaticPaths() {
+  const entries = await getCollection("cases", ({ id }) => id.startsWith("es/"))
+  return entries.map((entry) => {
+    const [, year, slug] = entry.data.path.split("/")
+    return { params: { year, slug }, props: { entry } }
   })
 }
 
-const { year, slug } = Astro.params
+const { entry } = Astro.props
 ---
 
-<CasePage lang="es" path={`/${year}/${slug}`} />
+<CasePage lang="es" entry={entry} />

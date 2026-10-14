@@ -177,3 +177,8 @@ const es: typeof en = {
 export const ui = { en, es }
 
 export type UI = typeof en
+
+/** Language of a page from its URL path: `/es/...` is Spanish, everything else English. */
+export function langFromPath(pathname: string): Lang {
+  return pathname === "/es" || pathname.startsWith("/es/") ? "es" : "en"
+}

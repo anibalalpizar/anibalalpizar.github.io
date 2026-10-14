@@ -1,0 +1,112 @@
+---
+exp: tech-solutions
+path: /2024/internship-at-tech-solutions
+date: "2024-08-19"
+titleHref: https://www.techkeppercr.com/
+title:
+  before: "Development of a Custom Web Application for a Restaurant for "
+  link: "techkeppercr"
+  after: ""
+lead: "Development of a custom web application for a restaurant, focused on optimizing order management, customer interaction, and kitchen operations. This project was part of my internship using Next.js for the frontend and Express with Node.js for the backend."
+facts:
+  - key: client
+    value: "techkeppercr"
+  - key: stack
+    value: "Next.js 14 · Express · Node.js · Prisma · Tailwind CSS · Jest · Swagger"
+---
+
+<Section title="Frontend Development">
+
+The frontend of the application was developed using Next.js 14, a framework that offers server-side rendering and static site generation, making it an ideal choice for a high-performance web application. Using Next.js allowed us to deliver a fast and responsive user interface, crucial for restaurant operations where real-time updates are essential.
+
+</Section>
+
+<Figure
+  src="/2024/internship-at-tech-solutions/nextjs.jpg"
+  width={900}
+  height={589}
+  caption="How the pieces of Next.js fit together"
+/>
+
+<Detail
+  letter="A"
+  title="Technical Details of the Frontend"
+  figure={{
+    src: "/2024/internship-at-tech-solutions/contextapi.jpg",
+    width: 751,
+    height: 541,
+    tone: "light",
+    caption: "Sharing state with the Context API",
+    source: "https://episyche.com/blog/how-to-use-context-api-in-a-nextjs-app",
+  }}
+>
+
+Next.js was chosen for its ability to handle complex routing, server-side rendering, and its seamless integration with React. Using useContext allowed us to efficiently manage state across different components, particularly for handling user sessions and order data. TailwindCSS was integrated for styling, providing consistent, responsive styling throughout the app.
+
+</Detail>
+
+<Section title="Backend Development">
+
+The backend was developed using Express and Node.js, with a focus on creating a robust and scalable API to manage the restaurant’s operations. The backend architecture was designed using a repository pattern, with Prisma as the ORM to interact with the SQL database. This setup provided a clear separation of responsibilities, making it easier to maintain and extend the code.
+
+</Section>
+
+<Figure
+  src="/2024/internship-at-tech-solutions/nodejs.jpg"
+  width={741}
+  height={362}
+  caption="Structure of the Express REST API"
+  source="https://www.coreycleary.me/project-structure-for-an-express-rest-api-when-there-is-no-standard-way/"
+/>
+
+<Detail
+  letter="B"
+  title="Technical Details of the Backend"
+  figure={{
+    src: "/2024/internship-at-tech-solutions/tests.jpg",
+    width: 800,
+    height: 800,
+    caption: "Continuous integration flow",
+  }}
+>
+
+We implemented unit tests using Jest to ensure the reliability of the backend services. This was especially important for functions such as order processing and user authentication. In addition, comprehensive documentation was created to facilitate future development and maintenance, using Swagger for API documentation.
+
+</Detail>
+
+<Section title="Results and Benefits">
+
+The web application significantly improved the restaurant’s operations by automating order management, reducing errors, and speeding up service. The responsive frontend combined with a powerful backend provided a seamless experience for both staff and customers, leading to increased efficiency and customer satisfaction.
+
+<Terms>
+  <Term name="Improved User Experience">The Next.js-powered frontend offered a fast and responsive interface, essential for managing the restaurant’s real-time operations.</Term>
+  <Term name="Scalable Backend">The Express and Node.js backend, combined with Prisma, allowed for easy scalability and maintenance, ensuring that the application could grow with the restaurant’s needs.</Term>
+  <Term name="Greater Accuracy">Automating order management reduced human errors, streamlining operations and improving service quality.</Term>
+</Terms>
+
+</Section>
+
+<Section title="Key Learnings">
+
+This project reinforced the importance of choosing the right technologies based on the project requirements. Using Next.js and useContext provided an efficient way to manage the frontend, while the backend benefited from the modular architecture enabled by the repository pattern and Prisma. Furthermore, the experience highlighted the need for thorough testing and documentation, which played a crucial role in the success of the project.
+
+</Section>
+
+<Figure
+  src="/2024/internship-at-tech-solutions/ideas.jpg"
+  width={2115}
+  height={540}
+  tone="light"
+  caption="Key learnings, mapped"
+/>
+
+<Section title="Software Presentation">
+
+The following video demonstrates the key features and functionality of the web application developed for the restaurant.
+
+</Section>
+
+<Video
+  youtubeId="-894MRBJNGs"
+  caption="Software preview"
+/>

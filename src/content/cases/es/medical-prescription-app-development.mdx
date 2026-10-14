@@ -1,0 +1,91 @@
+---
+exp: medical
+path: /2022/medical-prescription-app-development
+date: "2022-12-15"
+titleHref: https://www.levelsolo.io/
+title:
+  before: "Desarrollo de una app de recetas médicas para "
+  link: "Lvel Solo"
+  after: ": resumen técnico"
+lead: "Aplicación de escritorio para gestionar recetas médicas, dirigida a un cliente en Chile: un profesional de la salud que hasta entonces dependía de procesos manuales para crear sus recetas. El objetivo principal era optimizar esos procesos, reducir ineficiencias y mejorar la atención a los pacientes."
+facts:
+  - key: client
+    value: "Lvel Solo · Chile"
+---
+
+<Section title="Desafíos y problemas iniciales">
+
+Antes de la aplicación, el cliente enfrentaba varios desafíos. El proceso manual no solo era lento, sino también propenso a errores humanos, lo que podía comprometer la calidad de la atención. Desde el inicio era evidente la necesidad de automatizar la creación y el envío de recetas, y de mejorar la gestión de los datos de pacientes y usuarios.
+
+</Section>
+
+<Figure
+  src="/2022/medical-prescription-app-development/initial-diagram.jpg"
+  width={657}
+  height={539}
+  caption="Diagrama de casos de uso — ciclo inicial"
+/>
+
+<Section title="Elección de la arquitectura y los patrones de diseño">
+
+Opté por una arquitectura de 3 capas, con patrones de diseño como la capa de lógica de negocio (BLL) y la capa de acceso a datos (DAL). No fue una elección arbitraria: separar la lógica de negocio del acceso a datos era clave para mantener el código modular y fácil de mantener. Con esta estructura, cualquier cambio en la lógica de negocio o en la base de datos podía manejarse de forma aislada, minimizando el impacto en el resto del sistema. Además, esta arquitectura da más flexibilidad para escalar la aplicación en el futuro, porque permite desarrollar y actualizar cada componente por separado.
+
+</Section>
+
+<Figure
+  src="/2022/medical-prescription-app-development/3-layers-diagram.jpg"
+  width={1366}
+  height={890}
+  tone="light"
+  caption="Diagrama de secuencia — generar y enviar un reporte por correo"
+/>
+
+<Section title="Implementación del patrón Factory">
+
+Además, implementé el patrón Factory para gestionar la creación de objetos dentro de la aplicación. Este patrón resultó esencial para simplificar la incorporación de nuevas funcionalidades sin modificar el código existente, y permitió integrar nuevas características con fluidez y sin afectar la estabilidad del sistema. Esa flexibilidad fue clave para el éxito del proyecto: la aplicación pudo evolucionar según las necesidades cambiantes del cliente sin comprometer su estabilidad.
+
+</Section>
+
+<Figure
+  src="/2022/medical-prescription-app-development/factory-diagram.jpg"
+  width={1920}
+  height={1200}
+  caption="El Factory Method, ilustrado"
+  source="https://refactoring.guru/design-patterns/factory-method"
+/>
+
+<Section title="Resultados y beneficios">
+
+Esta aplicación trajo múltiples beneficios. Automatizar la creación de recetas redujo significativamente el tiempo necesario para esta tarea, lo que permitió al cliente concentrarse en otras áreas críticas de su práctica médica. Digitalizar el proceso minimizó los errores humanos propios de los métodos manuales y mejoró la precisión de las recetas emitidas. Además, una gestión más eficiente y precisa de las recetas se tradujo en una mejor atención, con tiempos de respuesta más cortos y mayor satisfacción general. La aplicación no solo optimizó los procesos internos del cliente: también mejoró la experiencia de los pacientes, con un impacto positivo en la calidad del servicio.
+
+<Terms>
+  <Term name="Mayor eficiencia">Automatizar la creación de recetas redujo significativamente el tiempo de esta tarea, lo que permitió al cliente concentrarse en otras áreas críticas de su práctica médica.</Term>
+  <Term name="Menos errores">Digitalizar el proceso minimizó los errores humanos de los métodos manuales, lo que a su vez mejoró la precisión de las recetas emitidas.</Term>
+  <Term name="Mejor atención al paciente">Una gestión de recetas más eficiente y precisa se tradujo en una mejor atención, con tiempos de respuesta más cortos y mayor satisfacción general.</Term>
+</Terms>
+
+</Section>
+
+<Section title="Aprendizajes clave">
+
+El desarrollo fue una experiencia de aprendizaje muy valiosa. La modularidad resultó uno de los aspectos más importantes del proyecto: usar BLL y DAL no solo facilitó el mantenimiento del código, sino que permitió una escalabilidad difícil de lograr con una estructura monolítica. También aprendí la importancia de diseñar pensando en el usuario final. Aunque las soluciones técnicas fueron cruciales, la adopción por parte del cliente dependía en gran medida de lo fácil de usar que fuera la interfaz. Esta experiencia reafirmó la necesidad de equilibrar la complejidad técnica con la simplicidad en el diseño de la interfaz. Una arquitectura modular y flexible permitió no solo una solución eficiente para el presente, sino también una base sólida para futuras extensiones y mejoras.
+
+</Section>
+
+<Figure
+  src="/2022/medical-prescription-app-development/evidence-1.png"
+  width={881}
+  height={516}
+  caption="Pantalla de inicio de sesión de la aplicación"
+/>
+
+<Section title="Mejoras a futuro">
+
+Aunque el proyecto fue un éxito, siempre hay espacio para mejorar. Integrar la aplicación con sistemas de expediente clínico electrónico (EHR) sería un aporte valioso: permitiría sincronizar directamente los expedientes de los pacientes y haría el sistema aún más eficiente. Además, recopilar y analizar la retroalimentación de los usuarios será clave para seguir refinando la aplicación y asegurar que continúe respondiendo a las necesidades del cliente y de sus pacientes. Un sistema de retroalimentación permitiría identificar áreas de mejora y adaptar la aplicación a las demandas cambiantes del entorno médico.
+
+<Terms>
+  <Term name="Integración con sistemas EHR">Una próxima versión podría integrarse con sistemas de expediente clínico electrónico (EHR) para sincronizar directamente los expedientes de los pacientes.</Term>
+  <Term name="Análisis de retroalimentación">Recopilar y analizar la retroalimentación de los usuarios será clave para refinar la aplicación, de modo que siga respondiendo a las necesidades del cliente y de sus pacientes.</Term>
+</Terms>
+
+</Section>

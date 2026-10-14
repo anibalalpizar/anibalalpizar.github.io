@@ -1,52 +1,59 @@
 ---
-import type { Figure } from "../../data/cases"
-import { L, ui, type Lang } from "../../i18n/ui"
+import { langFromPath, ui } from "../../i18n/ui"
 
-interface Props {
-  figure: Figure
-  /** Running number within the case, e.g. "01". */
-  number: string
-  lang: Lang
+export interface Props {
+  src: string
+  width: number
+  height: number
+  caption: string
+  /**
+   * light: dark monochrome diagram on white, inverted in the dark theme.
+   * dark: light monochrome diagram on black, inverted in the light theme.
+   * color: photos and colored diagrams, never touched.
+   */
+  tone?: "light" | "dark" | "color"
+  /** "bleed" spans the frame edge to edge (wide photos only). */
+  mode?: "plate" | "bleed"
+  /** Link to where the image comes from; the caption shows only its domain. */
+  source?: string
   /** Tighter horizontal padding, for figures inside a Detail block. */
   inset?: boolean
 }
 
-const { figure, number, lang, inset = false } = Astro.props
-const t = ui[lang]
-const caption = L(figure.caption, lang)
-const bleed = figure.mode === "bleed"
+const { src, width, height, caption, tone = "color", mode = "plate", source, inset = false } =
+  Astro.props
+const t = ui[langFromPath(Astro.url.pathname)]
+const bleed = mode === "bleed"
 
 // Natural size, capped at 760px wide and 640px tall. Setting the width up front
 // (with height: auto) reserves the space before the lazy image loads.
 const MAX_WIDTH = 760
 const MAX_HEIGHT = 640
-const displayWidth = Math.round(
-  Math.min(figure.width, MAX_WIDTH, (MAX_HEIGHT * figure.width) / figure.height)
-)
-const sourceHost = figure.source && new URL(figure.source).hostname.replace(/^www\./, "")
+const displayWidth = Math.round(Math.min(width, MAX_WIDTH, (MAX_HEIGHT * width) / height))
+const sourceHost = source && new URL(source).hostname.replace(/^www\./, "")
 ---
 
 <figure class:list={["figure", { inset }]}>
   {
     bleed ? (
       <img
-        src={figure.src}
+        src={src}
         alt={caption}
-        width={figure.width}
-        height={figure.height}
+        width={width}
+        height={height}
         loading="lazy"
         class="bleed"
       />
     ) : (
       <div class="plate">
         <img
-          src={figure.src}
+          src={src}
           alt={caption}
-          width={figure.width}
-          height={figure.height}
+          width={width}
+          height={height}
           loading="lazy"
           class="image"
-          data-tone={figure.tone}
+          data-tone={tone}
           style={`width: ${displayWidth}px`}
         />
       </div>
@@ -54,12 +61,12 @@ const sourceHost = figure.source && new URL(figure.source).hostname.replace(/^ww
   }
   <figcaption>
     <span class="label">
-      <span class="number">{t.fig} {number}</span>
+      <span class="number">{t.fig} <span class="count"></span></span>
       <span>{caption}</span>
     </span>
     {
-      figure.source && (
-        <a href={figure.source} target="_blank" rel="noreferrer" class="source">
+      source && (
+        <a href={source} target="_blank" rel="noreferrer" class="source">
           {t.source}: {sourceHost} ↗
         </a>
       )
@@ -68,9 +75,15 @@ const sourceHost = figure.source && new URL(figure.source).hostname.replace(/^ww
 </figure>
 
 <style>
+  /* Figures are numbered in reading order across the whole page (see CasePage). */
   .figure {
     margin: 0;
     border-top: 1px solid var(--line);
+    counter-increment: figure;
+  }
+
+  .count::before {
+    content: counter(figure, decimal-leading-zero);
   }
 
   .plate {
