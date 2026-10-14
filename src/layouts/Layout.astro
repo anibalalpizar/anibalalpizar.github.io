@@ -16,6 +16,8 @@ const { lang, title, path, page } = Astro.props
 const { description } = ui[lang]
 const urlFor = (target: Lang) => new URL(localePath(target, path), SITE_URL).href
 const spanishHref = localePath("es", path)
+// Social previews need an absolute URL; the logo is square (400×400).
+const shareImage = new URL("/logo.jpg", SITE_URL).href
 ---
 
 <!doctype html>
@@ -39,14 +41,20 @@ const spanishHref = localePath("es", path)
     }
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content="/logo.jpg" />
+    <meta property="og:image" content={shareImage} />
+    <meta property="og:image:width" content="400" />
+    <meta property="og:image:height" content="400" />
+    <meta property="og:image:alt" content="Aníbal Alpízar" />
     <meta property="og:url" content={urlFor(lang)} />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Aníbal Alpízar" />
     <meta property="og:locale" content={lang === "es" ? "es_CR" : "en_US"} />
-    <meta name="twitter:card" content="summary_large_image" />
+    <!-- "summary" shows a square image; "summary_large_image" would crop the logo to 2:1. -->
+    <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content="/logo.jpg" />
+    <meta name="twitter:image" content={shareImage} />
+    <meta name="twitter:image:alt" content="Aníbal Alpízar" />
     <link rel="icon" type="image/jpg" href="/logo.jpg" />
     <meta name="generator" content={Astro.generator} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
