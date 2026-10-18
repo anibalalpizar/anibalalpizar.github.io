@@ -24,3 +24,6 @@ pnpm-debug.log*
 .idea/
 
 .vercel
+
+# Local Claude Code settings (preview server config)
+.claude/
