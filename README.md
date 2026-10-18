@@ -1,54 +1,77 @@
-# Astro Starter Kit: Basics
+# anibalalpizar.github.io
+
+My personal website: experience, projects and case studies, in English and Spanish.
+
+**Live:** https://anibalalpizar.github.io · **Spanish:** https://anibalalpizar.github.io/es/
+
+Built with [Astro](https://astro.build) and MDX. Black and white, Geist Mono everywhere, dark theme by default, and a ⌘K command menu.
+
+## Run it locally
 
 ```sh
-npm create astro@latest -- --template basics
+npm install
+npm run dev      # http://localhost:4321
+npm run build    # type-checks, then builds to dist/
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
+## Where things live
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+| What | File |
+| --- | --- |
+| Experience, projects, stack, links | `src/data/site.ts` |
+| Email, GitHub, LinkedIn, location | `src/data/cv.json` |
+| Interface text in both languages (nav, buttons, labels) | `src/i18n/ui.ts` |
+| Case studies | `src/content/cases/<en\|es>/<slug>.mdx` |
+| Case study images | `src/assets/cases/<year>/<slug>/` |
+| CV | `public/Aníbal_CV.pdf` |
 
-![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
+Values that change with the language are written as `{ en: "…", es: "…" }`; plain strings are shared by both.
 
-## 🚀 Project Structure
+## Writing a case study
 
-Inside of your Astro project, you'll see the following folders and files:
+Each case is two MDX files with the same name, one in `en/` and one in `es/`. The page URL comes from `path` in the frontmatter, and the Experience row it belongs to from `exp` (an id in `site.ts`). The frontmatter is validated in `src/content/config.ts`, so a typo stops the build instead of publishing a broken page.
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── components/
-│   │   └── Card.astro
-│   ├── layouts/
-│   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
-└── package.json
+```mdx
+---
+exp: tech-solutions
+path: /2024/internship-at-tech-solutions
+date: "2024-08-19"
+titleHref: https://www.techkeppercr.com/
+title:
+  before: "Development of a Custom Web Application for a Restaurant for "
+  link: "techkeppercr"
+  after: ""
+lead: "One paragraph that introduces the project."
+facts:
+  - key: client
+    value: "techkeppercr"
+---
+
+<Section title="Frontend Development">
+
+Plain Markdown paragraphs go here.
+
+</Section>
+
+<Figure src="cases/2024/internship-at-tech-solutions/nextjs.jpg" caption="How the pieces of Next.js fit together" />
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+These components are available in every MDX file without importing them:
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+| Component | Use |
+| --- | --- |
+| `<Section title="…">` | A numbered section (01, 02…). Numbers are added automatically. |
+| `<Figure src="…" caption="…" />` | An image on the grid plate, numbered "Fig. 01". `src` is a path inside `src/assets`. Optional: `tone="light"` / `"dark"` for monochrome diagrams that should invert with the theme, `mode="bleed"` for full-width photos, `source="https://…"` for credits. |
+| `<Detail letter="A" title="…" figure={{ … }}>` | The boxed "Detail A" callout, with an optional figure. |
+| `<Terms>` + `<Term name="…">…</Term>` | A "term: description" list. |
+| `<Video youtubeId="…" caption="…" />` | A YouTube video that only loads when clicked. |
 
-Any static assets, like images, can be placed in the `public/` directory.
+Images are resized and converted to WebP at build time, and their width and height are read from the file.
 
-## 🧞 Commands
+## Deploy
 
-All commands are run from the root of the project, from a terminal:
+Every push to `master` builds the site and publishes it to GitHub Pages (`.github/workflows/deploy.yml`). The sitemap and the `/about` redirect are generated during the build.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## License
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+[MIT](LICENSE)
