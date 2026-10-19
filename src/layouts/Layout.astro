@@ -14,12 +14,8 @@ interface Props {
 
 const { lang, title, path, page } = Astro.props
 const { description } = ui[lang]
-// Absolute URL with a trailing slash: GitHub Pages serves every page as a folder
-// (/projects → /projects/), and the sitemap lists them that way too.
-const urlFor = (target: Lang) => {
-  const url = new URL(localePath(target, path), SITE_URL).href
-  return url.endsWith("/") ? url : `${url}/`
-}
+// Absolute URL; localePath already adds the trailing slash the sitemap uses too.
+const urlFor = (target: Lang) => new URL(localePath(target, path), SITE_URL).href
 const spanishHref = localePath("es", path)
 // Social previews need an absolute URL; the logo is square (400×400).
 const shareImage = new URL("/logo.jpg", SITE_URL).href

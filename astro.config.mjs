@@ -5,6 +5,9 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://anibalalpizar.github.io',
+  // GitHub Pages serves pages as folders (/projects/). Requiring the slash makes
+  // the dev server reject links without it, so they can't slip back in.
+  trailingSlash: 'always',
   integrations: [
     mdx(),
     sitemap({

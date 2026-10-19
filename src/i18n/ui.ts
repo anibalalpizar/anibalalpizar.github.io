@@ -12,15 +12,17 @@ export function L<T>(value: Localized<T>, lang: Lang): T {
   return value as T
 }
 
-/** `/projects` → `/es/projects` in Spanish. `path` always starts with `/`. */
+/**
+ * Link to a page in a language: `/projects` → `/projects/` or `/es/projects/`.
+ * `path` starts with `/` and may end in a `#section`. The trailing slash matches
+ * how GitHub Pages serves pages (as folders), so links don't go through a redirect.
+ */
 export function localePath(lang: Lang, path: string) {
-  return lang === "en" ? path : `/es${path}`
-}
-
-/** Strips the `/es` prefix, giving the path shared by both languages. */
-export function basePath(pathname: string) {
-  const path = pathname.replace(/^\/es(?=\/|$)/, "") || "/"
-  return path.length > 1 ? path.replace(/\/$/, "") : path
+  // The English 404 is the single file GitHub Pages serves for every missing URL.
+  if (lang === "en" && path === "/404") return "/404.html"
+  const [, pathname, suffix] = path.match(/^([^?#]*)(.*)$/)!
+  const withSlash = pathname.endsWith("/") ? pathname : `${pathname}/`
+  return `${lang === "es" ? "/es" : ""}${withSlash}${suffix}`
 }
 
 const en = {
