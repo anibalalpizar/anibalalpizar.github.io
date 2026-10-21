@@ -10,10 +10,11 @@ interface Props {
   /** Page path without the language prefix, e.g. "/" or "/projects". */
   path: string
   page: Page
+  /** For search results and link previews; defaults to the site description. */
+  description?: string
 }
 
-const { lang, title, path, page } = Astro.props
-const { description } = ui[lang]
+const { lang, title, path, page, description = ui[lang].description } = Astro.props
 // Absolute URL; localePath already adds the trailing slash the sitemap uses too.
 const urlFor = (target: Lang) => new URL(localePath(target, path), SITE_URL).href
 const spanishHref = localePath("es", path)

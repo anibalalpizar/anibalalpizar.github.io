@@ -28,7 +28,9 @@ export function localePath(lang: Lang, path: string) {
 const en = {
   docTitle: "Aníbal — Software Engineer",
   description:
-    "Aníbal Alpízar is a software engineer and web developer based in Costa Rica.",
+    "Aníbal Alpízar is a software engineer in Costa Rica. Experience, open-source projects and case studies in web development.",
+  projectsDescription:
+    "Open-source projects by Aníbal Alpízar: npm packages, web apps, APIs and developer tools built with TypeScript, Next.js and NestJS.",
   navExperience: "Experience",
   navProjects: "Projects",
   navStack: "Stack",
@@ -104,7 +106,9 @@ const en = {
 const es: typeof en = {
   docTitle: "Aníbal — Ingeniero de software",
   description:
-    "Aníbal Alpízar es ingeniero de software y desarrollador web en Costa Rica.",
+    "Aníbal Alpízar es ingeniero de software en Costa Rica. Experiencia, proyectos open source y casos de estudio de desarrollo web.",
+  projectsDescription:
+    "Proyectos open source de Aníbal Alpízar: paquetes npm, apps web, APIs y herramientas hechas con TypeScript, Next.js y NestJS.",
   navExperience: "Experiencia",
   navProjects: "Proyectos",
   navStack: "Stack",

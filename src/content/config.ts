@@ -15,6 +15,8 @@ const cases = defineCollection({
     /** The title, split around the part that links to titleHref. */
     title: z.object({ before: z.string(), link: z.string(), after: z.string() }),
     lead: z.string(),
+    /** Search-result description; defaults to the first sentence of the lead. */
+    description: z.string().max(160).optional(),
     facts: z.array(
       z.object({ key: z.enum(["client", "organization", "stack"]), value: z.string() })
     ),

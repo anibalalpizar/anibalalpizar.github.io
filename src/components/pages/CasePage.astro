@@ -13,6 +13,7 @@ import Layout from "../../layouts/Layout.astro"
 import { experience } from "../../data/site"
 import { L, localePath, ui, type Lang } from "../../i18n/ui"
 import { formatDate, timeAgo } from "../../utils/dates"
+import { summary } from "../../utils/summary"
 
 interface Props {
   lang: Lang
@@ -20,7 +21,7 @@ interface Props {
 }
 
 const { lang, entry } = Astro.props
-const { exp, path, date, titleHref, title, lead, facts } = entry.data
+const { exp, path, date, titleHref, title, lead, facts, description = summary(lead) } = entry.data
 const { Content } = await entry.render()
 const t = ui[lang]
 const two = (n: number) => String(n).padStart(2, "0")
@@ -48,7 +49,7 @@ const cells = [
 const components = { Section, Figure, Detail, Terms, Term, Video }
 ---
 
-<Layout lang={lang} title={`${title.before}${title.link}${title.after} — Aníbal`} path={path} page="case">
+<Layout lang={lang} title={`${title.before}${title.link}${title.after} — Aníbal`} path={path} page="case" description={description}>
   <main class="page case">
     <section id="top" class="hero">
       <PageBar
