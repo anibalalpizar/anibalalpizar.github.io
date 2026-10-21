@@ -7,6 +7,7 @@ import Projects from "../home/Projects.astro"
 import Stack from "../home/Stack.astro"
 import Layout from "../../layouts/Layout.astro"
 import { ui, type Lang } from "../../i18n/ui"
+import { homeData } from "../../utils/structuredData"
 
 interface Props {
   lang: Lang
@@ -15,7 +16,7 @@ interface Props {
 const { lang } = Astro.props
 ---
 
-<Layout lang={lang} title={ui[lang].docTitle} path="/" page="home">
+<Layout lang={lang} title={ui[lang].docTitle} path="/" page="home" structuredData={homeData(lang)}>
   <main class="page">
     <Hero lang={lang} />
     <Facts lang={lang} />

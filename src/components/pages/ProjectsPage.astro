@@ -5,6 +5,7 @@ import PageFooter from "../internal/PageFooter.astro"
 import Layout from "../../layouts/Layout.astro"
 import { categories, FULL_NAME, GITHUB_URL, kinds, projects } from "../../data/site"
 import { L, localePath, ui, type Lang } from "../../i18n/ui"
+import { projectsData } from "../../utils/structuredData"
 
 interface Props {
   lang: Lang
@@ -47,7 +48,10 @@ const strings = {
 }
 ---
 
-<Layout lang={lang} title={`${t.navProjects} — ${FULL_NAME}`} path="/projects" page="projects" description={t.projectsDescription}>
+<Layout lang={lang} title={`${t.navProjects} — ${FULL_NAME}`} path="/projects" page="projects"
+  description={t.projectsDescription}
+  structuredData={projectsData(lang, t.navProjects, t.projectsDescription)}
+>
   <main class="page">
     <section id="top" class="hero">
       <PageBar

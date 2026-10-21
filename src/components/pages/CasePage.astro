@@ -13,6 +13,7 @@ import Layout from "../../layouts/Layout.astro"
 import { experience, FULL_NAME } from "../../data/site"
 import { L, localePath, ui, type Lang } from "../../i18n/ui"
 import { formatDate, timeAgo } from "../../utils/dates"
+import { caseData } from "../../utils/structuredData"
 import { summary } from "../../utils/summary"
 
 interface Props {
@@ -49,7 +50,15 @@ const cells = [
 const components = { Section, Figure, Detail, Terms, Term, Video }
 ---
 
-<Layout lang={lang} title={`${title.before}${title.link}${title.after} — ${FULL_NAME}`} path={path} page="case" description={description}>
+<Layout lang={lang} title={`${title.before}${title.link}${title.after} — ${FULL_NAME}`} path={path} page="case"
+  description={description}
+  structuredData={caseData(lang, {
+    path,
+    headline: `${title.before}${title.link}${title.after}`,
+    description,
+    date,
+  })}
+>
   <main class="page case">
     <section id="top" class="hero">
       <PageBar
