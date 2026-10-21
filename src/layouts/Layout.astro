@@ -1,4 +1,9 @@
 ---
+// Geist Mono served from this site instead of Google Fonts: no extra connection
+// to another server before text can render. Only the Latin file is preloaded;
+// the browser fetches the other subsets only if a page needs them.
+import "@fontsource-variable/geist-mono"
+import geistMonoLatin from "@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2?url"
 import CommandMenu from "../components/CommandMenu.astro"
 import Header from "../components/Header.astro"
 import { SITE_URL, type Page } from "../data/site"
@@ -71,12 +76,7 @@ const shareImage = new URL("/logo.jpg", SITE_URL).href
     {jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
     <link rel="icon" type="image/jpg" href="/logo.jpg" />
     <meta name="generator" content={Astro.generator} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap"
-    />
+    <link rel="preload" href={geistMonoLatin} as="font" type="font/woff2" crossorigin />
     <script is:inline define:vars={{ lang, spanishHref, page }}>
       try {
         // Dark is the default; only an explicit choice switches to light.
@@ -141,7 +141,7 @@ const shareImage = new URL("/logo.jpg", SITE_URL).href
     --glass: rgba(0, 0, 0, 0.72);
     --overlay: rgba(0, 0, 0, 0.72);
     --shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.8);
-    --font: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font: "Geist Mono Variable", "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     --px: clamp(20px, 4vw, 32px);
     --dim: 0.62;
     color-scheme: dark;
