@@ -26,7 +26,7 @@ export function localePath(lang: Lang, path: string) {
 }
 
 const en = {
-  docTitle: "Aníbal — Software Engineer",
+  docTitle: "Aníbal Alpízar — Software Engineer",
   description:
     "Aníbal Alpízar is a software engineer in Costa Rica. Experience, open-source projects and case studies in web development.",
   projectsDescription:
@@ -104,7 +104,7 @@ const en = {
 
 // Typed against `en` so a missing or extra key fails the build.
 const es: typeof en = {
-  docTitle: "Aníbal — Ingeniero de software",
+  docTitle: "Aníbal Alpízar — Ingeniero de software",
   description:
     "Aníbal Alpízar es ingeniero de software en Costa Rica. Experiencia, proyectos open source y casos de estudio de desarrollo web.",
   projectsDescription:

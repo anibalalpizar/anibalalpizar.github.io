@@ -10,7 +10,7 @@ import Term from "../mdx/Term.astro"
 import Terms from "../mdx/Terms.astro"
 import Video from "../mdx/Video.astro"
 import Layout from "../../layouts/Layout.astro"
-import { experience } from "../../data/site"
+import { experience, FULL_NAME } from "../../data/site"
 import { L, localePath, ui, type Lang } from "../../i18n/ui"
 import { formatDate, timeAgo } from "../../utils/dates"
 import { summary } from "../../utils/summary"
@@ -49,7 +49,7 @@ const cells = [
 const components = { Section, Figure, Detail, Terms, Term, Video }
 ---
 
-<Layout lang={lang} title={`${title.before}${title.link}${title.after} — Aníbal`} path={path} page="case" description={description}>
+<Layout lang={lang} title={`${title.before}${title.link}${title.after} — ${FULL_NAME}`} path={path} page="case" description={description}>
   <main class="page case">
     <section id="top" class="hero">
       <PageBar

@@ -5,6 +5,8 @@ const profileUrl = (network: string) =>
   basics.profiles.find((profile) => profile.network === network)?.url
 
 export const SITE_URL = basics.url
+/** Full name, used in page titles and structured data. */
+export const FULL_NAME = basics.name
 export const EMAIL = basics.email
 export const GITHUB_URL = profileUrl("GitHub") ?? "https://github.com/anibalalpizar"
 export const LINKEDIN_URL =

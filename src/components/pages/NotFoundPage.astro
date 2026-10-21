@@ -3,6 +3,7 @@ import Marks from "../Marks.astro"
 import PageBar from "../internal/PageBar.astro"
 import PageFooter from "../internal/PageFooter.astro"
 import Layout from "../../layouts/Layout.astro"
+import { FULL_NAME } from "../../data/site"
 import { localePath, ui, type Lang } from "../../i18n/ui"
 
 interface Props {
@@ -14,7 +15,7 @@ const t = ui[lang]
 const home = localePath(lang, "/")
 ---
 
-<Layout lang={lang} title={`${t.notFoundTitle.replace(/\.$/, "")} — Aníbal`} path="/404" page="not-found">
+<Layout lang={lang} title={`${t.notFoundTitle.replace(/\.$/, "")} — ${FULL_NAME}`} path="/404" page="not-found">
   <main class="page">
     <section id="top" class="hero">
       <PageBar backHref={home} backLabel={t.backHome} meta={t.notFoundCode} />
