@@ -79,7 +79,8 @@ const t = ui[lang]
       color 160ms ease;
   }
 
-  .card:hover {
+  .card:hover,
+  .card:focus-visible {
     background: var(--fg);
     color: var(--bg);
   }
@@ -138,7 +139,8 @@ const t = ui[lang]
       color 160ms ease;
   }
 
-  .all:hover {
+  .all:hover,
+  .all:focus-visible {
     background: var(--fg);
     color: var(--bg);
   }
@@ -156,5 +158,11 @@ const t = ui[lang]
     font-size: 12px;
     opacity: var(--dim);
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Full-width: the ring goes inside, where the frame can't cover it. */
+  .card:focus-visible,
+  .all:focus-visible {
+    outline-offset: -4px;
   }
 </style>

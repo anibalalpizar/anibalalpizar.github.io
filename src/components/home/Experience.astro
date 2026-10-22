@@ -95,7 +95,8 @@ const lastYear = jobs.some((job) => job.current)
       color 160ms ease;
   }
 
-  .link:hover {
+  .link:hover,
+  .link:focus-visible {
     background: var(--fg);
     color: var(--bg);
   }
@@ -149,5 +150,10 @@ const lastYear = jobs.some((job) => job.current)
     font-size: 12px;
     opacity: var(--dim);
     text-align: right;
+  }
+
+  /* Full-width: the ring goes inside, where the frame can't cover it. */
+  .link:focus-visible {
+    outline-offset: -4px;
   }
 </style>

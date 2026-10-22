@@ -89,7 +89,8 @@ const year = new Date().getFullYear()
       color 160ms ease;
   }
 
-  .row:hover {
+  .row:hover,
+  .row:focus-visible {
     background: var(--bg);
     color: var(--fg);
   }
@@ -117,7 +118,13 @@ const year = new Date().getFullYear()
     transition: opacity 150ms ease;
   }
 
-  .link:hover {
+  .link:hover,
+  .link:focus-visible {
     opacity: 1;
+  }
+
+  /* Full-width: the ring goes inside, where the frame can't cover it. */
+  .row:focus-visible {
+    outline-offset: -4px;
   }
 </style>

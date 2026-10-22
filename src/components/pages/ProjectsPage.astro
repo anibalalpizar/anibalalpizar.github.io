@@ -268,7 +268,8 @@ const strings = {
     transition: opacity 150ms ease;
   }
 
-  .github:hover {
+  .github:hover,
+  .github:focus-visible {
     opacity: 1;
   }
 
@@ -343,7 +344,8 @@ const strings = {
     transition: background-color 120ms ease;
   }
 
-  .tab:hover {
+  .tab:hover,
+  .tab:focus-visible {
     background: var(--hover);
   }
 
@@ -371,7 +373,8 @@ const strings = {
       color 160ms ease;
   }
 
-  .row:hover {
+  .row:hover,
+  .row:focus-within {
     background: var(--fg);
     color: var(--bg);
   }
@@ -450,7 +453,8 @@ const strings = {
     text-underline-offset: 3px;
   }
 
-  .link-row a:hover {
+  .link-row a:hover,
+  .link-row a:focus-visible {
     text-decoration: underline;
   }
 
@@ -491,7 +495,19 @@ const strings = {
     transition: opacity 150ms ease;
   }
 
-  .clear:hover {
+  .clear:hover,
+  .clear:focus-visible {
     opacity: 1;
+  }
+
+  /* Full-width: the ring goes inside, where the frame can't cover it. */
+  .tab:focus-visible {
+    outline-offset: -4px;
+  }
+
+  /* The input has no box of its own, so the whole search row shows the ring. */
+  .search:focus-within {
+    outline: 2px solid currentColor;
+    outline-offset: -4px;
   }
 </style>

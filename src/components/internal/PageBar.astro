@@ -36,7 +36,8 @@ const { backHref, backLabel, meta } = Astro.props
     transition: opacity 150ms ease;
   }
 
-  .back:hover {
+  .back:hover,
+  .back:focus-visible {
     opacity: 1;
   }
 

@@ -158,7 +158,8 @@ const components = { Section, Figure, Detail, Terms, Term, Video }
     transition: opacity 150ms ease;
   }
 
-  h1 a:hover {
+  h1 a:hover,
+  h1 a:focus-visible {
     opacity: var(--dim);
   }
 
@@ -234,7 +235,8 @@ const components = { Section, Figure, Detail, Terms, Term, Video }
       color 160ms ease;
   }
 
-  .pager-link:hover {
+  .pager-link:hover,
+  .pager-link:focus-visible {
     background: var(--fg);
     color: var(--bg);
   }
@@ -254,5 +256,10 @@ const components = { Section, Figure, Detail, Terms, Term, Video }
     font-weight: 500;
     letter-spacing: -0.035em;
     line-height: 1.15;
+  }
+
+  /* Full-width: the ring goes inside, where the frame can't cover it. */
+  .pager-link:focus-visible {
+    outline-offset: -4px;
   }
 </style>

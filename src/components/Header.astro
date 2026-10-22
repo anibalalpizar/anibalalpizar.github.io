@@ -141,6 +141,7 @@ const currentSection = page === "case" ? "experience" : page === "projects" ? "p
   }
 
   .link:hover,
+  .link:focus-visible,
   .link.current {
     opacity: 1;
   }
@@ -180,7 +181,8 @@ const currentSection = page === "case" ? "experience" : page === "projects" ? "p
       background-color 150ms ease;
   }
 
-  .language:hover {
+  .language:hover,
+  .language:focus-visible {
     opacity: 1;
   }
 
@@ -204,7 +206,8 @@ const currentSection = page === "case" ? "experience" : page === "projects" ? "p
     transition: opacity 150ms ease;
   }
 
-  .cmdk:hover {
+  .cmdk:hover,
+  .cmdk:focus-visible {
     opacity: 1;
   }
 
@@ -222,7 +225,8 @@ const currentSection = page === "case" ? "experience" : page === "projects" ? "p
     cursor: pointer;
   }
 
-  .theme:hover {
+  .theme:hover,
+  .theme:focus-visible {
     background: var(--hover);
   }
 

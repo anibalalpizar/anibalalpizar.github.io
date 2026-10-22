@@ -211,6 +211,13 @@ const shareImage = new URL("/logo.jpg", SITE_URL).href
     color: var(--bg);
   }
 
+  /* Keyboard focus: a ring in the current text colour, so it also shows on
+     inverted rows and in the light Contact block. Mouse clicks don't show it. */
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
   /* Anchor targets land below the 56px sticky header. */
   [id] {
     scroll-margin-top: 56px;
