@@ -73,7 +73,7 @@ const shareImage = new URL("/logo.jpg", SITE_URL).href
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={shareImage} />
     <meta name="twitter:image:alt" content="Aníbal Alpízar" />
-    {jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
+    {jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}
     <link rel="icon" type="image/jpg" href="/logo.jpg" />
     <meta name="generator" content={Astro.generator} />
     <link rel="preload" href={geistMonoLatin} as="font" type="font/woff2" crossorigin />
