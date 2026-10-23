@@ -69,7 +69,9 @@ const strings = {
       <Marks />
       <label class="search">
         <input
-          type="text"
+          type="search"
+          enterkeyhint="search"
+          autocapitalize="off"
           placeholder={t.searchProjects}
           aria-label={t.searchProjects}
           autocomplete="off"
@@ -299,6 +301,15 @@ const strings = {
     letter-spacing: -0.015em;
   }
 
+  /* type="search" without the browser's own styling or clear button. */
+  input {
+    appearance: none;
+  }
+
+  input::-webkit-search-cancel-button {
+    display: none;
+  }
+
   input::placeholder {
     color: var(--muted);
   }
@@ -323,19 +334,21 @@ const strings = {
 
   .tabs {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 1px;
     background: var(--line);
     border-top: 1px solid var(--line);
   }
 
+  /* One row from 640px: tabs stretch, so at 1120px they look as before. */
   .tab {
     flex: 1 1 auto;
+    min-width: 0;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 16px;
-    padding: 14px var(--px);
+    padding: 14px 16px;
     border: 0;
     background: var(--bg);
     font-size: 14px;
@@ -344,9 +357,19 @@ const strings = {
     transition: background-color 120ms ease;
   }
 
-  .tab:hover,
   .tab:focus-visible {
     background: var(--hover);
+  }
+
+  /* Hover only with a mouse: on touch screens it stays stuck after a tap. */
+  @media (hover: hover) {
+    .tab:hover {
+      background: var(--hover);
+    }
+  }
+
+  .tab:first-child {
+    padding-left: var(--px);
   }
 
   .tab[aria-selected="true"] {
@@ -373,10 +396,17 @@ const strings = {
       color 160ms ease;
   }
 
-  .row:hover,
   .row:focus-within {
     background: var(--fg);
     color: var(--bg);
+  }
+
+  /* Hover only with a mouse: on touch screens it stays stuck after a tap. */
+  @media (hover: hover) {
+    .row:hover {
+      background: var(--fg);
+      color: var(--bg);
+    }
   }
 
   .row[hidden] {
@@ -509,5 +539,74 @@ const strings = {
   .search:focus-within {
     outline: 2px solid currentColor;
     outline-offset: -4px;
+  }
+
+  @media (hover: none) {
+    .chip {
+      display: none;
+    }
+  }
+
+  @media (max-width: 359.98px) {
+    h1 {
+      font-size: 48px;
+    }
+  }
+
+  @media (max-width: 639.98px) {
+    /* Filters: a 2-column grid with "All" across the top. */
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+    }
+
+    .tab {
+      padding: 12px 12px 12px var(--px);
+      gap: 8px;
+    }
+
+    .tab:first-child {
+      grid-column: 1 / -1;
+    }
+
+    /* Rows: number and type on one line, links at the bottom with 44px targets. */
+    .row {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 8px;
+      padding: 20px var(--px) 8px;
+    }
+
+    .meta {
+      flex-direction: row;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .details {
+      gap: 8px 24px;
+    }
+
+    .name-stack,
+    .description {
+      flex: 1 1 100%;
+    }
+
+    .links {
+      flex: 1 1 100%;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .link-row {
+      gap: 24px;
+    }
+
+    .link-row a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+    }
   }
 </style>
