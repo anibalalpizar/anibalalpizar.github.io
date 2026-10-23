@@ -95,10 +95,17 @@ const lastYear = jobs.some((job) => job.current)
       color 160ms ease;
   }
 
-  .link:hover,
   .link:focus-visible {
     background: var(--fg);
     color: var(--bg);
+  }
+
+  /* Hover only with a mouse: on touch screens it stays stuck after a tap. */
+  @media (hover: hover) {
+    .link:hover {
+      background: var(--fg);
+      color: var(--bg);
+    }
   }
 
   .arrow {
@@ -155,5 +162,36 @@ const lastYear = jobs.some((job) => job.current)
   /* Full-width: the ring goes inside, where the frame can't cover it. */
   .link:focus-visible {
     outline-offset: -4px;
+  }
+
+  @media (hover: none) {
+    .link:active {
+      background: var(--hover);
+    }
+  }
+
+  /* Phones: the year goes above; role and note share a line under the name. */
+  @media (max-width: 639.98px) {
+    .row {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 6px;
+    }
+
+    .details {
+      gap: 2px 12px;
+    }
+
+    .company {
+      flex: 1 1 100%;
+    }
+
+    .role {
+      flex: 0 1 auto;
+    }
+
+    .note {
+      flex: 0 0 auto;
+      text-align: left;
+    }
   }
 </style>

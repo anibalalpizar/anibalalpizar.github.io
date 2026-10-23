@@ -89,10 +89,17 @@ const year = new Date().getFullYear()
       color 160ms ease;
   }
 
-  .row:hover,
   .row:focus-visible {
     background: var(--bg);
     color: var(--fg);
+  }
+
+  /* Hover only with a mouse: on touch screens it stays stuck after a tap. */
+  @media (hover: hover) {
+    .row:hover {
+      background: var(--bg);
+      color: var(--fg);
+    }
   }
 
   .glyph {
@@ -126,5 +133,11 @@ const year = new Date().getFullYear()
   /* Full-width: the ring goes inside, where the frame can't cover it. */
   .row:focus-visible {
     outline-offset: -4px;
+  }
+
+  @media (hover: none) {
+    .row:active {
+      background: var(--line-inv);
+    }
   }
 </style>

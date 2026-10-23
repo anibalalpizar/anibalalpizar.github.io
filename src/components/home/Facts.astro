@@ -102,4 +102,19 @@ const { city, region } = basics.location
     font-size: 12px;
     opacity: var(--dim);
   }
+
+  /* Phones: one row per fact, label on the left (96px fits "ORGANIZATION"). */
+  @media (max-width: 639.98px) {
+    .cell {
+      flex: 1 1 100%;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 12px;
+      padding: 14px var(--px);
+    }
+
+    .label {
+      flex: 0 0 96px;
+    }
+  }
 </style>

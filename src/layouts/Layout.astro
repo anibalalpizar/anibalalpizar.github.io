@@ -218,6 +218,11 @@ const shareImage = new URL("/logo.jpg", SITE_URL).href
     outline-offset: 2px;
   }
 
+  a,
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   /* Anchor targets land below the 56px sticky header. */
   [id] {
     scroll-margin-top: 56px;

@@ -71,8 +71,19 @@ const { lang } = Astro.props
       color 120ms ease;
   }
 
-  .item:hover {
-    background: var(--fg);
-    color: var(--bg);
+  /* Hover only with a mouse: on touch screens it stays stuck after a tap. */
+  @media (hover: hover) {
+    .item:hover {
+      background: var(--fg);
+      color: var(--bg);
+    }
+  }
+
+  /* Phones: the label goes above its technologies. */
+  @media (max-width: 639.98px) {
+    .row {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 10px;
+    }
   }
 </style>

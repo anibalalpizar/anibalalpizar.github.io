@@ -79,10 +79,17 @@ const t = ui[lang]
       color 160ms ease;
   }
 
-  .card:hover,
   .card:focus-visible {
     background: var(--fg);
     color: var(--bg);
+  }
+
+  /* Hover only with a mouse: on touch screens it stays stuck after a tap. */
+  @media (hover: hover) {
+    .card:hover {
+      background: var(--fg);
+      color: var(--bg);
+    }
   }
 
   .top {
@@ -139,10 +146,17 @@ const t = ui[lang]
       color 160ms ease;
   }
 
-  .all:hover,
   .all:focus-visible {
     background: var(--fg);
     color: var(--bg);
+  }
+
+  /* Hover only with a mouse: on touch screens it stays stuck after a tap. */
+  @media (hover: hover) {
+    .all:hover {
+      background: var(--fg);
+      color: var(--bg);
+    }
   }
 
   .all-meta {
@@ -164,5 +178,12 @@ const t = ui[lang]
   .card:focus-visible,
   .all:focus-visible {
     outline-offset: -4px;
+  }
+
+  @media (hover: none) {
+    .card:active,
+    .all:active {
+      background: var(--hover);
+    }
   }
 </style>
