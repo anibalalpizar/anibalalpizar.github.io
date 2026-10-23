@@ -88,7 +88,7 @@ const items = [
   data-home={localePath(lang, "/")}
   data-empty-text={t.noResults}
 >
-  <div class="panel" role="dialog" aria-modal="true" aria-label={t.ariaMenu}>
+  <div class="panel" role="dialog" tabindex="-1" aria-modal="true" aria-label={t.ariaMenu}>
     <div class="search">
       <input
         type="text"
@@ -99,7 +99,8 @@ const items = [
         spellcheck="false"
         data-command-input
       />
-      <span class="esc">esc</span>
+      <span class="esc" aria-hidden="true">esc</span>
+      <button type="button" class="close" data-close-command-menu>{t.close}</button>
     </div>
     <div class="list" id="command-menu-list" role="listbox" data-command-list></div>
   </div>
@@ -127,6 +128,7 @@ const items = [
   const overlay = document.querySelector<HTMLElement>("[data-command-menu]")!
   const input = overlay.querySelector<HTMLInputElement>("[data-command-input]")!
   const list = overlay.querySelector<HTMLElement>("[data-command-list]")!
+  const panel = overlay.querySelector<HTMLElement>("[role=dialog]")!
   const items: Item[] = JSON.parse(overlay.dataset.items!)
 
   let isOpen = false
@@ -234,7 +236,9 @@ const items = [
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
     document.body.style.paddingRight = `${scrollbarWidth}px`
     document.body.style.overflow = "hidden"
-    input.focus()
+    // On touch screens, focusing would pop the keyboard over the list.
+    if (matchMedia("(hover: hover)").matches) input.focus()
+    else panel.focus()
   }
 
   function close() {
@@ -305,6 +309,8 @@ const items = [
   })
 
   input.addEventListener("input", filter)
+
+  overlay.querySelector("[data-close-command-menu]")!.addEventListener("click", () => close())
 
   overlay.addEventListener("click", (event) => {
     if (event.target === overlay) close()
@@ -422,5 +428,58 @@ const items = [
     text-align: center;
     font-size: 14px;
     color: var(--muted);
+  }
+  .panel:focus {
+    outline: none;
+  }
+
+  /* Touch screens get a real "Close" button instead of the "esc" key hint. */
+  .close {
+    display: none;
+    flex-shrink: 0;
+    min-height: 32px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: transparent;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  @media (hover: none) {
+    .esc {
+      display: none;
+    }
+
+    .close {
+      display: inline-flex;
+      align-items: center;
+    }
+  }
+
+  /* iOS zooms into inputs smaller than 16px. */
+  @media (hover: none) {
+    input {
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 639.98px) {
+    .overlay {
+      padding: 8px;
+    }
+
+    .list {
+      max-height: calc(100dvh - 78px);
+    }
+
+    input {
+      font-size: 16px;
+    }
+
+    .list :global(.item) {
+      min-height: 44px;
+    }
   }
 </style>

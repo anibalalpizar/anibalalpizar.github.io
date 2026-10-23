@@ -69,7 +69,7 @@ const currentSection = page === "case" ? "experience" : page === "projects" ? "p
       }
     </div>
     <button type="button" class="cmdk" aria-label={t.ariaMenu} data-open-command-menu>
-      ⌘K
+      <span class="cmdk-keys">⌘K</span><span class="cmdk-menu">{t.menu}</span>
     </button>
     <button type="button" class="theme" aria-label={t.ariaTheme} data-theme-toggle>
       <span class="theme-icon"></span>
@@ -211,6 +211,22 @@ const currentSection = page === "case" ? "experience" : page === "projects" ? "p
     opacity: 1;
   }
 
+  /* Below 760px the nav links are hidden and this button is the only way to
+     navigate, so it says "Menu" instead of the shortcut. */
+  .cmdk-menu {
+    display: none;
+  }
+
+  @media (max-width: 759.98px) {
+    .cmdk-keys {
+      display: none;
+    }
+
+    .cmdk-menu {
+      display: inline;
+    }
+  }
+
   .theme {
     width: 32px;
     height: 28px;
@@ -236,5 +252,45 @@ const currentSection = page === "case" ? "experience" : page === "projects" ? "p
     border-radius: 50%;
     border: 1.5px solid currentColor;
     background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+  }
+
+  /* Phones: 36px controls, easier to tap. The ::after strip grows the touch
+     area to 44px tall without changing how the buttons look. */
+  @media (max-width: 639.98px) {
+    .languages {
+      height: 36px;
+      margin-right: 8px;
+    }
+
+    .language {
+      height: 30px;
+      min-width: 32px;
+      justify-content: center;
+    }
+
+    .cmdk {
+      height: 36px;
+      padding: 0 12px;
+    }
+
+    .theme {
+      width: 36px;
+      height: 36px;
+      margin-left: 6px;
+    }
+
+    .language,
+    .cmdk,
+    .theme {
+      position: relative;
+    }
+
+    .language::after,
+    .cmdk::after,
+    .theme::after {
+      content: "";
+      position: absolute;
+      inset: -4px 0;
+    }
   }
 </style>
