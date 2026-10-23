@@ -24,7 +24,8 @@ const { name } = Astro.props
   }
 
   dt {
-    flex: 0 0 240px;
+    flex: 0 1 240px;
+    min-width: 0;
     display: flex;
     gap: 12px;
     font-weight: 500;
@@ -50,5 +51,17 @@ const { name } = Astro.props
     line-height: 1.6;
     opacity: var(--dim);
     text-wrap: pretty;
+  }
+
+  /* Phones: description under the term, aligned with its text (9px cross + 12px gap). */
+  @media (max-width: 639.98px) {
+    dt {
+      flex: 1 1 100%;
+    }
+
+    dd {
+      flex: 1 1 100%;
+      padding-left: 21px;
+    }
   }
 </style>

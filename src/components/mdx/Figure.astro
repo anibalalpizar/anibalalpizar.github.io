@@ -63,17 +63,25 @@ const sizes = bleed ? "(min-width: 1120px) 1118px, 100vw" : `min(${displayWidth}
       />
     ) : (
       <div class="plate">
-        <Picture
-          src={image}
-          alt={caption}
-          widths={widths}
-          sizes={sizes}
-          formats={["webp"]}
-          loading="lazy"
-          class="image"
-          data-tone={tone}
-          style={`width: ${displayWidth}px`}
-        />
+        <a
+          href={image.src}
+          target="_blank"
+          rel="noreferrer"
+          class="zoom"
+          aria-label={`${t.fullSizeAria}: ${caption}`}
+        >
+          <Picture
+            src={image}
+            alt={caption}
+            widths={widths}
+            sizes={sizes}
+            formats={["webp"]}
+            loading="lazy"
+            class="image"
+            data-tone={tone}
+            style={`width: ${displayWidth}px`}
+          />
+        </a>
       </div>
     )
   }
@@ -86,6 +94,13 @@ const sizes = bleed ? "(min-width: 1120px) 1118px, 100vw" : `min(${displayWidth}
       source && (
         <a href={source} target="_blank" rel="noreferrer" class="source">
           {t.source}: {sourceHost} ↗
+        </a>
+      )
+    }
+    {
+      !bleed && (
+        <a href={image.src} target="_blank" rel="noreferrer" class="full">
+          {t.fullSize}
         </a>
       )
     }
@@ -141,6 +156,19 @@ const sizes = bleed ? "(min-width: 1120px) 1118px, 100vw" : `min(${displayWidth}
     display: contents;
   }
 
+  /* The image links to the original file, to read small diagram text. */
+  .zoom {
+    display: flex;
+    max-width: 100%;
+    cursor: zoom-in;
+  }
+
+  /* "Full size" in the caption is only needed on phones (see below). */
+  .full {
+    display: none;
+    opacity: var(--dim);
+  }
+
   .bleed {
     display: block;
     width: 100%;
@@ -187,6 +215,32 @@ const sizes = bleed ? "(min-width: 1120px) 1118px, 100vw" : `min(${displayWidth}
   @media (prefers-reduced-motion: reduce) {
     .image {
       transition: none;
+    }
+  }
+
+  /* Phones: tighter plate, caption stacked; the source and "Full size" line up
+     with the description (7ch = "Fig. 01" in the mono font, + 12px gap). */
+  @media (max-width: 639.98px) {
+    .plate,
+    .inset .plate {
+      padding: 24px 16px;
+    }
+
+    figcaption,
+    .inset figcaption {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      padding: 12px var(--px);
+    }
+
+    .source,
+    .full {
+      padding-left: calc(7ch + 12px);
+    }
+
+    .full {
+      display: inline;
     }
   }
 </style>

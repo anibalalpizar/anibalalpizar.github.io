@@ -4,14 +4,16 @@ interface Props {
   backHref: string
   backLabel: string
   meta: string
+  /** Shown before `meta` except below 360px, e.g. "Case study" in "Case study 01 / 04". */
+  metaPrefix?: string
 }
 
-const { backHref, backLabel, meta } = Astro.props
+const { backHref, backLabel, meta, metaPrefix } = Astro.props
 ---
 
 <div class="bar">
   <a href={backHref} class="back">{backLabel}</a>
-  <span class="meta">{meta}</span>
+  <span class="meta">{metaPrefix && <span class="prefix">{metaPrefix} </span>}{meta}</span>
 </div>
 
 <style>
@@ -43,5 +45,11 @@ const { backHref, backLabel, meta } = Astro.props
 
   .meta {
     font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 359.98px) {
+    .prefix {
+      display: none;
+    }
   }
 </style>

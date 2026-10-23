@@ -15,7 +15,7 @@ const t = ui[langFromPath(Astro.url.pathname)]
 ---
 
 <div class="row">
-  <span></span>
+  <span class="spacer"></span>
   <aside class="detail">
     <span class="corner tl" aria-hidden="true"></span>
     <span class="corner tr" aria-hidden="true"></span>
@@ -107,5 +107,35 @@ const t = ui[langFromPath(Astro.url.pathname)]
     opacity: var(--dim);
     text-wrap: pretty;
     hyphens: auto;
+  }
+
+  /* Phones: the box docks to the frame so the text keeps the page's width;
+     its "+" corners land on the frame lines like any section's. */
+  @media (max-width: 639.98px) {
+    .row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+      padding: 0;
+    }
+
+    .spacer {
+      display: none;
+    }
+
+    .detail {
+      border: 0;
+    }
+
+    .label {
+      padding: 12px var(--px);
+    }
+
+    .body {
+      padding: 24px var(--px);
+    }
+
+    .body :global(p) {
+      hyphens: manual;
+    }
   }
 </style>

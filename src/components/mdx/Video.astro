@@ -40,7 +40,9 @@ const watchUrl = `https://www.youtube.com/watch?v=${youtubeId}`
 <script>
   // Facade: YouTube's iframe (and its scripts) only load after the click.
   document.querySelectorAll<HTMLElement>("[data-video]").forEach((screen) => {
-    screen.querySelector("button")?.addEventListener("click", () => {
+    // The whole 16:9 box is the tap target, not just the button.
+    screen.addEventListener("click", () => {
+      if (screen.querySelector("iframe")) return
       const iframe = document.createElement("iframe")
       iframe.src = `https://www.youtube-nocookie.com/embed/${screen.dataset.video}?autoplay=1&rel=0`
       iframe.title = screen.dataset.title ?? ""
@@ -85,6 +87,7 @@ const watchUrl = `https://www.youtube.com/watch?v=${youtubeId}`
     aspect-ratio: 16 / 9;
     overflow: hidden;
     border: 1px solid var(--line);
+    cursor: pointer;
     background:
       repeating-linear-gradient(135deg, transparent 0 11px, var(--line) 11px 12px),
       var(--bg);
@@ -162,5 +165,22 @@ const watchUrl = `https://www.youtube.com/watch?v=${youtubeId}`
   .watch:hover,
   .watch:focus-visible {
     opacity: 1;
+  }
+
+  @media (max-width: 639.98px) {
+    .plate {
+      padding: 24px 16px;
+    }
+
+    figcaption {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      padding: 12px var(--px);
+    }
+
+    .watch {
+      padding-left: calc(7ch + 12px);
+    }
   }
 </style>

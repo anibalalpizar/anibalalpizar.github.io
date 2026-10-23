@@ -64,7 +64,8 @@ const components = { Section, Figure, Detail, Terms, Term, Video }
       <PageBar
         backHref={localePath(lang, "/#experience")}
         backLabel={t.backToExperience}
-        meta={`${t.caseStudy} ${two(index + 1)} / ${two(studies.length)}`}
+        metaPrefix={t.caseStudy}
+        meta={`${two(index + 1)} / ${two(studies.length)}`}
       />
       <h1>
         {title.before}<a href={titleHref} target="_blank" rel="noreferrer">{title.link}</a>{title.after}
@@ -142,7 +143,7 @@ const components = { Section, Figure, Detail, Terms, Term, Video }
 
   h1 {
     max-width: 1000px;
-    font-size: clamp(30px, 4.4vw, 52px);
+    font-size: clamp(28px, 4.4vw, 52px);
     font-weight: 600;
     letter-spacing: -0.05em;
     line-height: 1.04;
@@ -151,7 +152,9 @@ const components = { Section, Figure, Detail, Terms, Term, Video }
     hyphens: auto;
   }
 
+  /* Never split the client's name ("techkep-percr"). */
   h1 a {
+    hyphens: manual;
     text-decoration: underline;
     text-decoration-thickness: 2px;
     text-underline-offset: 0.12em;
@@ -235,10 +238,17 @@ const components = { Section, Figure, Detail, Terms, Term, Video }
       color 160ms ease;
   }
 
-  .pager-link:hover,
   .pager-link:focus-visible {
     background: var(--fg);
     color: var(--bg);
+  }
+
+  /* Hover only with a mouse: on touch screens it stays stuck after a tap. */
+  @media (hover: hover) {
+    .pager-link:hover {
+      background: var(--fg);
+      color: var(--bg);
+    }
   }
 
   .next {
@@ -261,5 +271,32 @@ const components = { Section, Figure, Detail, Terms, Term, Video }
   /* Full-width: the ring goes inside, where the frame can't cover it. */
   .pager-link:focus-visible {
     outline-offset: -4px;
+  }
+
+  @media (hover: none) {
+    .pager-link:active {
+      background: var(--hover);
+    }
+  }
+
+  @media (max-width: 639.98px) {
+    /* In ~36-character lines automatic hyphens split almost every line. */
+    h1,
+    .lead {
+      hyphens: manual;
+    }
+
+    /* Data strip → key/value list. */
+    .cell {
+      flex: 1 1 100%;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 12px;
+      padding: 14px var(--px);
+    }
+
+    .cell-label {
+      flex: 0 0 96px;
+    }
   }
 </style>

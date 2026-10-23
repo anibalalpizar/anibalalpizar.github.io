@@ -82,4 +82,17 @@ const id = title
     text-decoration: underline;
     text-underline-offset: 3px;
   }
+
+  /* Phones: the number goes above the title, and no automatic hyphens. */
+  @media (max-width: 639.98px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 12px;
+    }
+
+    h2,
+    .body :global(p) {
+      hyphens: manual;
+    }
+  }
 </style>
