@@ -83,6 +83,86 @@ const id = title
     text-underline-offset: 3px;
   }
 
+  /* Inline code; inside a dimmed paragraph it dims too, on purpose. */
+  .body :global(:not(pre) > code) {
+    padding: 0.1em 0.35em;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--hover);
+    font-family: inherit;
+    font-size: 0.9em;
+  }
+
+  .body :global(h3) {
+    margin-top: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+
+  .body :global(ul),
+  .body :global(ol) {
+    max-width: 66ch;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    counter-reset: item;
+  }
+
+  .body :global(li) {
+    display: flex;
+    gap: 12px;
+    line-height: 1.7;
+    opacity: var(--dim);
+    text-wrap: pretty;
+  }
+
+  /* Bullets are the 9px "+" of the frame marks. */
+  .body :global(ul > li)::before {
+    content: "";
+    flex: 0 0 9px;
+    height: 9px;
+    margin-top: 8px;
+    background:
+      linear-gradient(currentColor, currentColor) center / 1px 100% no-repeat,
+      linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat;
+  }
+
+  /* Numbered: "01." in the same size as the section number. */
+  .body :global(ol > li) {
+    align-items: baseline;
+    counter-increment: item;
+  }
+
+  .body :global(ol > li)::before {
+    content: counter(item, decimal-leading-zero) ".";
+    flex: 0 0 auto;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .body :global(blockquote) {
+    max-width: 60ch;
+    margin: 8px 0;
+    padding: 2px 0 2px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-left: 1px solid currentColor;
+  }
+
+  .body :global(blockquote p) {
+    font-size: 17px;
+    line-height: 1.6;
+    letter-spacing: -0.015em;
+    opacity: 1;
+  }
+
   /* Phones: the number goes above the title, and no automatic hyphens. */
   @media (max-width: 639.98px) {
     .grid {
@@ -91,7 +171,8 @@ const id = title
     }
 
     h2,
-    .body :global(p) {
+    .body :global(p),
+    .body :global(li) {
       hyphens: manual;
     }
   }

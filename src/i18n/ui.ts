@@ -106,6 +106,8 @@ const en = {
   close: "Close",
   fullSize: "Full size ↗",
   fullSizeAria: "Open image at full size",
+  copy: "Copy",
+  copied: "Copied",
 }
 
 // Typed against `en` so a missing or extra key fails the build.
@@ -188,6 +190,8 @@ const es: typeof en = {
   close: "Cerrar",
   fullSize: "Ampliar ↗",
   fullSizeAria: "Abrir la imagen en tamaño completo",
+  copy: "Copiar",
+  copied: "Copiado",
 }
 
 export const ui = { en, es }

@@ -1,0 +1,22 @@
+---
+// A quote with an optional author: <Quote cite="— Name">Text</Quote>.
+// Plain Markdown quotes (> text) get the same style, without the author.
+interface Props {
+  cite?: string
+}
+
+const { cite } = Astro.props
+---
+
+<blockquote>
+  <slot />
+  {cite && <cite>{cite}</cite>}
+</blockquote>
+
+<style>
+  cite {
+    font-style: normal;
+    font-size: 12px;
+    opacity: var(--dim);
+  }
+</style>

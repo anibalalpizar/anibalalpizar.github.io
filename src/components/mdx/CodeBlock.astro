@@ -1,0 +1,129 @@
+---
+// Fenced code blocks (```ts title="env.ts") in MDX: a bar with the file name
+// and a Copy button above the code. Highlighting is monochrome: Shiki's
+// css-variables theme, with every token in the text colour and comments muted.
+import type { HTMLAttributes } from "astro/types"
+import { langFromPath, ui } from "../../i18n/ui"
+
+type Props = HTMLAttributes<"pre"> & { "data-language"?: string; "data-title"?: string }
+
+const { "data-title": title, "data-language": language, ...pre } = Astro.props
+const t = ui[langFromPath(Astro.url.pathname)]
+const label = title ?? (language && language !== "plaintext" ? language : "")
+---
+
+<div class="code" data-code-block>
+  <div class="bar">
+    <span class="label">{label}</span>
+    <button type="button" class="copy" data-copy data-copied={t.copied}>{t.copy}</button>
+  </div>
+  <pre {...pre} data-language={language}><slot /></pre>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-code-block]").forEach((block) => {
+    const button = block.querySelector<HTMLButtonElement>("[data-copy]")!
+    const label = button.textContent!
+    let timer: number | undefined
+
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(block.querySelector("pre")!.innerText)
+      } catch {
+        return
+      }
+      button.textContent = button.dataset.copied!
+      clearTimeout(timer)
+      timer = window.setTimeout(() => (button.textContent = label), 1600)
+    })
+  })
+</script>
+
+<style>
+  .code {
+    /* Astro renames Shiki's --astro-code-foreground / -background to these. */
+    --astro-code-color-text: var(--fg);
+    --astro-code-color-background: transparent;
+    --astro-code-token-comment: var(--muted);
+    min-width: 0;
+    margin: 8px 0;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .bar {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 8px 0 20px;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+  }
+
+  .label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: var(--dim);
+  }
+
+  .copy {
+    flex-shrink: 0;
+    height: 32px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: var(--dim);
+    transition:
+      opacity 150ms ease,
+      background-color 150ms ease;
+  }
+
+  .copy:hover,
+  .copy:focus-visible {
+    opacity: 1;
+    background: var(--hover);
+  }
+
+  pre {
+    margin: 0;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.7;
+    tab-size: 2;
+  }
+
+  /* Browsers give <code> their own monospace font; keep Geist Mono. */
+  pre :global(code) {
+    font-family: inherit;
+  }
+
+  /* The ring goes inside, so the box's overflow doesn't clip it. */
+  pre:focus-visible {
+    outline-offset: -4px;
+  }
+
+  /* Phones: the box reaches the frame on both sides; the code scrolls sideways. */
+  @media (max-width: 639.98px) {
+    .code {
+      margin: 8px calc(-1 * var(--px));
+      border-width: 1px 0;
+    }
+
+    .bar {
+      padding-left: var(--px);
+    }
+
+    pre {
+      padding: 18px var(--px);
+    }
+  }
+</style>
