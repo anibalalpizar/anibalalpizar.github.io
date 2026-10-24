@@ -82,6 +82,12 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
     <meta name="twitter:image" content={shareImage} />
     <meta name="twitter:image:alt" content={ogImage.alt} />
     {jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${ui[lang].navBlog} — Aníbal Alpízar`}
+      href={new URL(lang === "es" ? "/es/rss.xml" : "/rss.xml", SITE_URL).href}
+    />
     <link rel="icon" type="image/jpg" href="/logo.jpg" />
     <meta name="generator" content={Astro.generator} />
     <link rel="preload" href={geistMonoLatin} as="font" type="font/woff2" crossorigin />
