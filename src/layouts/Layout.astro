@@ -19,6 +19,10 @@ interface Props {
   description?: string
   /** schema.org JSON-LD for the page (see src/utils/structuredData.ts). */
   structuredData?: object
+  /** 1200×630 social preview; defaults to the designer's image for the language. */
+  ogImage?: { path: string; alt: string }
+  /** Case studies and posts are articles for link previews. */
+  article?: { publishedTime: string }
 }
 
 const {
@@ -28,14 +32,16 @@ const {
   page,
   description = ui[lang].description,
   structuredData,
+  ogImage = { path: `/og/og-default-${lang}.png`, alt: ui[lang].docTitle },
+  article,
 } = Astro.props
 // "<" escaped so text inside the data can never close the <script> tag early.
 const jsonLd = structuredData && JSON.stringify(structuredData).replace(/</g, "\\u003c")
 // Absolute URL; localePath already adds the trailing slash the sitemap uses too.
 const urlFor = (target: Lang) => new URL(localePath(target, path), SITE_URL).href
 const spanishHref = localePath("es", path)
-// Social previews need an absolute URL; the logo is square (400×400).
-const shareImage = new URL("/logo.jpg", SITE_URL).href
+// Social previews need an absolute URL.
+const shareImage = new URL(ogImage.path, SITE_URL).href
 ---
 
 <!doctype html>
@@ -60,19 +66,21 @@ const shareImage = new URL("/logo.jpg", SITE_URL).href
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={shareImage} />
-    <meta property="og:image:width" content="400" />
-    <meta property="og:image:height" content="400" />
-    <meta property="og:image:alt" content="Aníbal Alpízar" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImage.alt} />
     <meta property="og:url" content={urlFor(lang)} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={article ? "article" : "website"} />
+    {article && <meta property="article:published_time" content={article.publishedTime} />}
     <meta property="og:site_name" content="Aníbal Alpízar" />
     <meta property="og:locale" content={lang === "es" ? "es_CR" : "en_US"} />
-    <!-- "summary" shows a square image; "summary_large_image" would crop the logo to 2:1. -->
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:locale:alternate" content={lang === "es" ? "en_US" : "es_CR"} />
+    <!-- Large card: the preview images are 1200×630. -->
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={shareImage} />
-    <meta name="twitter:image:alt" content="Aníbal Alpízar" />
+    <meta name="twitter:image:alt" content={ogImage.alt} />
     {jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}
     <link rel="icon" type="image/jpg" href="/logo.jpg" />
     <meta name="generator" content={Astro.generator} />
