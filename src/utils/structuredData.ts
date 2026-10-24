@@ -97,10 +97,54 @@ export function projectsData(lang: Lang, name: string, description: string) {
   }
 }
 
+type ArticlePage = {
+  path: string
+  headline: string
+  description: string
+  date: string
+  image: string
+  keywords?: string[]
+}
+
+function article(lang: Lang, type: "Article" | "BlogPosting", page: ArticlePage) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      website,
+      person(lang),
+      {
+        "@type": type,
+        headline: page.headline,
+        description: page.description,
+        datePublished: page.date,
+        url: abs(localePath(lang, page.path)),
+        inLanguage: lang,
+        image: abs(page.image),
+        keywords: page.keywords?.join(", "),
+        isPartOf: { "@id": WEBSITE_ID },
+        author: { "@id": PERSON_ID },
+        publisher: { "@id": PERSON_ID },
+      },
+    ],
+  }
+}
+
 /** Case study: an article written by the person. */
-export function caseData(
+export function caseData(lang: Lang, page: ArticlePage) {
+  return article(lang, "Article", page)
+}
+
+/** Blog post. */
+export function postData(lang: Lang, page: ArticlePage) {
+  return article(lang, "BlogPosting", page)
+}
+
+/** /blog: the list of posts. */
+export function blogData(
   lang: Lang,
-  page: { path: string; headline: string; description: string; date: string; image: string }
+  name: string,
+  description: string,
+  posts: { path: string; headline: string; date: string }[]
 ) {
   return {
     "@context": "https://schema.org",
@@ -108,16 +152,20 @@ export function caseData(
       website,
       person(lang),
       {
-        "@type": "Article",
-        headline: page.headline,
-        description: page.description,
-        datePublished: page.date,
-        url: abs(localePath(lang, page.path)),
+        "@type": "Blog",
+        name,
+        description,
+        url: abs(localePath(lang, "/blog")),
         inLanguage: lang,
-        image: abs(page.image),
         isPartOf: { "@id": WEBSITE_ID },
         author: { "@id": PERSON_ID },
-        publisher: { "@id": PERSON_ID },
+        blogPost: posts.map((post) => ({
+          "@type": "BlogPosting",
+          headline: post.headline,
+          url: abs(localePath(lang, post.path)),
+          datePublished: post.date,
+          author: { "@id": PERSON_ID },
+        })),
       },
     ],
   }

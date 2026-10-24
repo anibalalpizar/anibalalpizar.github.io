@@ -11,6 +11,7 @@ import {
   sections,
 } from "../data/site"
 import { L, localePath, ui, type Lang } from "../i18n/ui"
+import { getPosts } from "../utils/posts"
 
 interface Props {
   lang: Lang
@@ -22,6 +23,7 @@ const { lang, path } = Astro.props
 const t = ui[lang]
 const g = t.groups
 const otherLang: Lang = lang === "en" ? "es" : "en"
+const posts = await getPosts(lang)
 
 // "jump" scrolls on the home page and goes to /#id elsewhere; "go" opens a page.
 const items = [
@@ -54,6 +56,20 @@ const items = [
     hint: L(kinds[kind], lang),
     action: "jump",
     target: id,
+  })),
+  {
+    group: g.blog,
+    label: t.allArticles,
+    hint: String(posts.length),
+    action: "go",
+    target: localePath(lang, "/blog"),
+  },
+  ...posts.map((post) => ({
+    group: g.blog,
+    label: post.data.title,
+    hint: post.data.date,
+    action: "go",
+    target: localePath(lang, post.path),
   })),
   { group: g.links, label: t.github, hint: "↗", action: "open", target: GITHUB_URL },
   { group: g.links, label: t.linkedin, hint: "↗", action: "open", target: LINKEDIN_URL },

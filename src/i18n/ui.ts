@@ -90,6 +90,7 @@ const en = {
     projects: "Projects",
     links: "Links",
     prefs: "Preferences",
+    blog: "Blog",
   },
   toLight: "Switch to light theme",
   toDark: "Switch to dark theme",
@@ -108,6 +109,17 @@ const en = {
   fullSizeAria: "Open image at full size",
   copy: "Copy",
   copied: "Copied",
+  blogDescription:
+    "Articles by Aníbal Alpízar on web development: what he builds, how and what he learns along the way.",
+  navBlog: "Blog",
+  backToBlog: "← Blog",
+  article: "article",
+  articles: "articles",
+  allArticles: "All articles",
+  readingTime: "Reading time",
+  minRead: "min read",
+  tags: "Tags",
+  rss: "RSS ↗",
 }
 
 // Typed against `en` so a missing or extra key fails the build.
@@ -176,6 +188,7 @@ const es: typeof en = {
     projects: "Proyectos",
     links: "Enlaces",
     prefs: "Preferencias",
+    blog: "Blog",
   },
   toLight: "Cambiar a tema claro",
   toDark: "Cambiar a tema oscuro",
@@ -192,6 +205,17 @@ const es: typeof en = {
   fullSizeAria: "Abrir la imagen en tamaño completo",
   copy: "Copiar",
   copied: "Copiado",
+  blogDescription:
+    "Artículos de Aníbal Alpízar sobre desarrollo web: lo que construye, cómo lo hace y lo que aprende en el camino.",
+  navBlog: "Blog",
+  backToBlog: "← Blog",
+  article: "artículo",
+  articles: "artículos",
+  allArticles: "Todos los artículos",
+  readingTime: "Lectura",
+  minRead: "min de lectura",
+  tags: "Etiquetas",
+  rss: "RSS ↗",
 }
 
 export const ui = { en, es }

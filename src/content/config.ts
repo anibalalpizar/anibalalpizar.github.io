@@ -23,4 +23,17 @@ const cases = defineCollection({
   }),
 })
 
-export const collections = { cases }
+// Blog posts: src/content/posts/<en|es>/<slug>.mdx, with the same slug in both
+// languages (/blog/<slug>/ and /es/blog/<slug>/). Same MDX components as the cases.
+const posts = defineCollection({
+  type: "content",
+  schema: z.object({
+    title: z.string(),
+    /** Intro under the title, and the description for search results and the RSS feed. */
+    description: z.string().max(160),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    tags: z.array(z.string()).min(1),
+  }),
+})
+
+export const collections = { cases, posts }

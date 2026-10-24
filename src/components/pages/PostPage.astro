@@ -1,0 +1,68 @@
+---
+import Article from "../internal/Article.astro"
+import { mdxComponents } from "../mdx"
+import Layout from "../../layouts/Layout.astro"
+import { FULL_NAME } from "../../data/site"
+import { localePath, ui, type Lang } from "../../i18n/ui"
+import { formatDate, timeAgo } from "../../utils/dates"
+import type { Post } from "../../utils/posts"
+import { postData } from "../../utils/structuredData"
+
+interface Props {
+  lang: Lang
+  post: Post
+  /** All posts in this language, newest first (see getPosts). */
+  posts: Post[]
+}
+
+const { lang, post, posts } = Astro.props
+const { title, description, date, tags } = post.data
+const { Content } = await post.render()
+const t = ui[lang]
+const read = `${post.minutes} ${t.minRead}`
+
+// Previous / Next in the order of the list: "Previous" is the newer post.
+const index = posts.findIndex((other) => other.id === post.id)
+const neighbor = (offset: number) => {
+  const other = posts[index + offset]
+  return other && { name: other.data.title, href: localePath(lang, other.path) }
+}
+
+const cells = [
+  { label: t.date, value: formatDate(date, lang), sub: timeAgo(date, lang), date },
+  { label: t.readingTime, value: read },
+  { label: t.tags, value: tags.join(" · ") },
+]
+
+// Generated at build time by src/pages/og/[lang]/blog/[slug].png.ts.
+const ogImage = { path: `/og/${lang}${post.path}.png`, alt: title }
+---
+
+<Layout lang={lang} title={`${title} — ${FULL_NAME}`} path={post.path} page="post"
+  description={description}
+  ogImage={ogImage}
+  article={{ publishedTime: date }}
+  structuredData={postData(lang, {
+    path: post.path,
+    headline: title,
+    description,
+    date,
+    image: ogImage.path,
+    keywords: tags,
+  })}
+>
+  <Article
+    lang={lang}
+    backHref={localePath(lang, "/blog")}
+    backLabel={t.backToBlog}
+    meta={read}
+    lead={description}
+    cells={cells}
+    pagerLabel={t.navBlog}
+    prev={neighbor(-1)}
+    next={neighbor(1)}
+  >
+    <Fragment slot="title">{title}</Fragment>
+    <Content components={mdxComponents} />
+  </Article>
+</Layout>
