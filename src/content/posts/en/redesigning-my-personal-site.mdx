@@ -1,0 +1,107 @@
+---
+title: "Redesigning my personal site"
+description: "How I rebuilt this site with Claude Design and Claude Code: a blueprint look, Astro and MDX, two languages and the small details that don’t show."
+date: "2026-10-24"
+tags: ["Astro", "MDX", "Design", "AI"]
+---
+
+<Section title="Why redesign it">
+
+I built the first version of this site in August 2024, with Astro. It did its job: a timeline of my experience, cards for my projects, an About page and a ⌘K menu. But two years later it looked like many other developer sites: light theme, rounded cards, a different font for every kind of text, and English only.
+
+I wanted three things. A site that looks like me and not like a template, readable in English and in Spanish, and case studies that work just as well on a phone as on a laptop.
+
+</Section>
+
+<Figure
+  src="posts/redesigning-my-personal-site/before.png"
+  caption="The site in 2024: light theme, timeline and project cards"
+/>
+
+<Figure
+  src="posts/redesigning-my-personal-site/after.png"
+  caption="The site today: the blueprint look, in Geist Mono"
+/>
+
+<Section title="Designing with Claude Design">
+
+The design came from Claude Design, in rounds. Each delivery was a small package: a README with exact measurements, an HTML prototype I could open in the browser, and a file with every text in both languages. The first round set the minimal direction, the second one defined every page in detail, and the last one added phones, link previews and this blog.
+
+The idea behind the look is a blueprint. Thin lines frame the page like a technical drawing, small "+" marks sit where the lines cross, and everything is set in Geist Mono, my favorite typeface. Rows invert their colors when you hover them, and the theme is dark by default.
+
+Not everything came from the design. I put my full name in the page titles, added LinkedIn next to GitHub and email, and asked for a visible focus ring for people who browse with the keyboard. When a new round conflicted with those choices, mine stayed.
+
+</Section>
+
+<Section title="From design to code with Claude Code">
+
+Claude Code turned each delivery into code in this Astro project. It read the README and the prototype, compared measurements against them, and split the work into small commits, one per change, never one per file.
+
+My part was to review: open each page, try it on my phone, and ask for changes when something didn’t feel right. That loop, design, code, review, was faster than doing any of the three alone, and I always knew what had changed and why.
+
+</Section>
+
+<Section title="Astro and MDX">
+
+Astro builds plain HTML pages ahead of time, so the site loads fast and ships almost no JavaScript. The few scripts it has are small, like the theme, the language switch, the ⌘K menu and the search on the projects page.
+
+The case studies and this blog are written in MDX: Markdown that can also use components. I write the text like a normal document and drop in a figure, a video or a numbered section where I need one, without importing anything:
+
+```mdx title="microsoft-student-ambassador.mdx"
+<Section title="Community Engagement">
+
+One of the key responsibilities of a Microsoft Student Ambassador
+is to engage with the community, both on and off-campus.
+
+</Section>
+
+<Figure
+  src="cases/2024/microsoft-student-ambassador/anibal.jpg"
+  caption="At the Microsoft office"
+/>
+```
+
+Images go through Astro too. They are resized and converted to WebP at build time, and the black-on-white diagrams are inverted in the dark theme, so they don’t glow like a white box.
+
+</Section>
+
+<Section title="Two languages for real">
+
+Every page exists twice: in English at `/` and in Spanish at `/es/`. If your browser is in Spanish, the site takes you to the Spanish version the first time, and after that it remembers the language you pick with the EN/ES switch.
+
+Search engines get the same information: each page points to its other version with `hreflang`, and the sitemap lists both. Even the 404 page comes in two languages.
+
+</Section>
+
+<Section title="The details that don’t show">
+
+Most of the work went into things you only notice when they are missing.
+
+### For everyone
+
+- Pages shared on social media show a 1200×630 image with the title, generated for each page when the site is built.
+- The ⌘K menu jumps to any section, case study, project or article. On phones, the same button says "Menu".
+- The font is served from this site and preloaded, so text doesn’t jump when it loads.
+
+### For phones and keyboards
+
+- Below 640px every label moves above its content, and buttons grow to a comfortable size for a finger.
+- Hover effects only happen with a mouse. On a touch screen they would stay stuck after a tap.
+- Keyboard focus always shows a ring in the color of the text, even on inverted rows.
+
+That second rule is written as a comment in the code, right above every hover style:
+
+> Hover only with a mouse: on touch screens it stays stuck after a tap.
+
+</Section>
+
+<Section title="What I learned">
+
+1. A design with exact specs saves weeks. When every size and color is written down, there is nothing to guess.
+2. Working with AI is still work: the results were good because I reviewed every step and said no when needed.
+3. Small, separate commits make a long project easy to follow and easy to undo.
+4. The small details are the ones people notice: the focus ring, the preview image, the page that works on a phone.
+
+This blog is the next step. I’ll write here about what I build and what I learn along the way.
+
+</Section>

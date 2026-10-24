@@ -1,0 +1,107 @@
+---
+title: "Cómo rediseñé mi sitio personal"
+description: "Cómo rehice este sitio con Claude Design y Claude Code: un estilo de plano, Astro y MDX, dos idiomas y los detalles que no se ven."
+date: "2026-10-24"
+tags: ["Astro", "MDX", "Diseño", "IA"]
+---
+
+<Section title="Por qué rediseñarlo">
+
+Hice la primera versión de este sitio en agosto de 2024, con Astro. Cumplía su función: una línea de tiempo con mi experiencia, tarjetas para mis proyectos, una página "About" y un menú ⌘K. Pero dos años después se parecía a muchos otros sitios de desarrolladores: tema claro, tarjetas redondeadas, una letra distinta para cada tipo de texto y solo en inglés.
+
+Quería tres cosas. Un sitio que se viera como yo y no como una plantilla, que se pudiera leer en inglés y en español, y casos de estudio que funcionaran igual de bien en el celular que en la computadora.
+
+</Section>
+
+<Figure
+  src="posts/redesigning-my-personal-site/before.png"
+  caption="El sitio en 2024: tema claro, línea de tiempo y tarjetas de proyectos"
+/>
+
+<Figure
+  src="posts/redesigning-my-personal-site/after.png"
+  caption="El sitio hoy: el estilo de plano, en Geist Mono"
+/>
+
+<Section title="Diseñar con Claude Design">
+
+El diseño salió de Claude Design, por entregas. Cada entrega era un paquete pequeño: un README con las medidas exactas, un prototipo en HTML que podía abrir en el navegador y un archivo con todos los textos en los dos idiomas. La primera entrega marcó la dirección minimalista, la segunda definió cada página en detalle y la última agregó el celular, las imágenes para redes y este blog.
+
+La idea detrás del estilo es un plano. Líneas finas enmarcan la página como un dibujo técnico, unas pequeñas marcas "+" aparecen donde se cruzan las líneas y todo va en Geist Mono, mi letra favorita. Las filas invierten sus colores al pasar el mouse y el tema es oscuro por defecto.
+
+No todo salió del diseño. Puse mi nombre completo en los títulos de las páginas, agregué LinkedIn junto a GitHub y el correo, y pedí que se viera bien dónde estás cuando navegas con el teclado. Cuando una entrega nueva chocaba con esas decisiones, se quedaban las mías.
+
+</Section>
+
+<Section title="Del diseño al código con Claude Code">
+
+Claude Code pasó cada entrega a código en este proyecto de Astro. Leía el README y el prototipo, comparaba las medidas con ellos y dividía el trabajo en commits pequeños, uno por cada cambio, nunca uno por archivo.
+
+Mi parte era revisar: abrir cada página, probarla en el celular y pedir cambios cuando algo no me convencía. Ese ciclo de diseño, código y revisión fue más rápido que hacer cualquiera de los tres por separado, y siempre supe qué había cambiado y por qué.
+
+</Section>
+
+<Section title="Astro y MDX">
+
+Astro genera páginas HTML de antemano, así que el sitio carga rápido y casi no usa JavaScript. Los pocos scripts que tiene son pequeños, como el del tema, el cambio de idioma, el menú ⌘K y el buscador de la página de proyectos.
+
+Los casos de estudio y este blog están escritos en MDX: Markdown que también puede usar componentes. Escribo el texto como un documento normal y meto una figura, un video o una sección numerada donde la necesito, sin importar nada:
+
+```mdx title="microsoft-student-ambassador.mdx"
+<Section title="Participación en la comunidad">
+
+Una de las responsabilidades principales de un Microsoft Student
+Ambassador es involucrarse con la comunidad, dentro y fuera del campus.
+
+</Section>
+
+<Figure
+  src="cases/2024/microsoft-student-ambassador/anibal.jpg"
+  caption="En la oficina de Microsoft"
+/>
+```
+
+Las imágenes también pasan por Astro. Se achican y se convierten a WebP al compilar el sitio, y los diagramas negros sobre blanco se invierten en el tema oscuro, para que no brillen como una caja blanca.
+
+</Section>
+
+<Section title="Bilingüe de verdad">
+
+Cada página existe dos veces: en inglés en `/` y en español en `/es/`. Si tu navegador está en español, el sitio te lleva a la versión en español la primera vez, y después recuerda el idioma que elijas con el botón EN/ES.
+
+Los buscadores reciben la misma información: cada página apunta a su otra versión con `hreflang` y el sitemap tiene las dos. Hasta la página 404 viene en los dos idiomas.
+
+</Section>
+
+<Section title="Los detalles que no se ven">
+
+La mayor parte del trabajo se fue en cosas que solo notas cuando faltan.
+
+### Para todos
+
+- Al compartir una página en redes sale una imagen de 1200×630 con el título, que se crea para cada página al compilar el sitio.
+- El menú ⌘K te lleva a cualquier sección, caso de estudio, proyecto o artículo. En el celular, el mismo botón dice "Menú".
+- La letra se sirve desde este mismo sitio y se carga antes, así el texto no brinca cuando aparece.
+
+### Para el celular y el teclado
+
+- Bajo 640px cada etiqueta pasa arriba de su contenido y los botones crecen a un tamaño cómodo para el dedo.
+- Los efectos al pasar el mouse solo pasan con mouse. En una pantalla táctil se quedarían pegados después de tocar.
+- Al navegar con el teclado siempre se ve un borde del color del texto, incluso en las filas invertidas.
+
+Esa segunda regla está escrita como comentario en el código, justo encima de cada estilo de hover:
+
+> Hover only with a mouse: on touch screens it stays stuck after a tap.
+
+</Section>
+
+<Section title="Qué aprendí">
+
+1. Un diseño con especificaciones exactas ahorra semanas. Cuando cada tamaño y cada color están escritos, no hay nada que adivinar.
+2. Trabajar con IA sigue siendo trabajo: los resultados fueron buenos porque revisé cada paso y dije que no cuando hacía falta.
+3. Los commits pequeños y separados hacen que un proyecto largo sea fácil de seguir y fácil de deshacer.
+4. Los detalles pequeños son los que la gente nota: el borde del foco, la imagen al compartir, la página que funciona en el celular.
+
+Este blog es el siguiente paso. Aquí voy a escribir sobre lo que construyo y lo que aprendo en el camino.
+
+</Section>
