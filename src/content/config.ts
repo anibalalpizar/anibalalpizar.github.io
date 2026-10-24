@@ -2,7 +2,7 @@ import { defineCollection, z } from "astro:content"
 
 // One MDX file per case and language: src/content/cases/<en|es>/<slug>.mdx.
 // The body uses the components in src/components/mdx (Section, Figure, Detail…),
-// passed in by CasePage, so the files don't need imports.
+// passed in by CasePage (src/components/mdx/index.ts), so the files don't need imports.
 const cases = defineCollection({
   type: "content",
   schema: z.object({

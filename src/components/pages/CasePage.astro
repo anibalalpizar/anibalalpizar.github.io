@@ -1,14 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content"
-import Marks from "../Marks.astro"
-import PageBar from "../internal/PageBar.astro"
-import PageFooter from "../internal/PageFooter.astro"
-import Detail from "../mdx/Detail.astro"
-import Figure from "../mdx/Figure.astro"
-import Section from "../mdx/Section.astro"
-import Term from "../mdx/Term.astro"
-import Terms from "../mdx/Terms.astro"
-import Video from "../mdx/Video.astro"
+import Article from "../internal/Article.astro"
+import { mdxComponents } from "../mdx"
 import Layout from "../../layouts/Layout.astro"
 import { experience, FULL_NAME } from "../../data/site"
 import { L, localePath, ui, type Lang } from "../../i18n/ui"
@@ -37,21 +30,16 @@ const neighbor = (offset: number) => {
   const other = studies[index + offset]
   return other && { name: L(other.company, lang), href: localePath(lang, other.casePath!) }
 }
-const prev = neighbor(-1)
-const next = neighbor(1)
 
 const cells = [
   { label: t.date, value: formatDate(date, lang), sub: timeAgo(date, lang), date },
   { label: t.role, value: L(job.role, lang), sub: L(job.note, lang) },
-  ...facts.map((fact) => ({ label: t[fact.key], value: fact.value, sub: "" })),
+  ...facts.map((fact) => ({ label: t[fact.key], value: fact.value })),
 ]
 
 const headline = `${title.before}${title.link}${title.after}`
 // Generated at build time by src/pages/og/[lang]/[year]/[slug].png.ts.
 const ogImage = { path: `/og/${lang}${path}.png`, alt: headline }
-
-// Components available inside the MDX files without importing them.
-const components = { Section, Figure, Detail, Terms, Term, Video }
 ---
 
 <Layout lang={lang} title={`${headline} — ${FULL_NAME}`} path={path} page="case"
@@ -60,244 +48,21 @@ const components = { Section, Figure, Detail, Terms, Term, Video }
   article={{ publishedTime: date }}
   structuredData={caseData(lang, { path, headline, description, date, image: ogImage.path })}
 >
-  <main class="page case">
-    <section id="top" class="hero">
-      <PageBar
-        backHref={localePath(lang, "/#experience")}
-        backLabel={t.backToExperience}
-        metaPrefix={t.caseStudy}
-        meta={`${two(index + 1)} / ${two(studies.length)}`}
-      />
-      <h1>
-        {title.before}<a href={titleHref} target="_blank" rel="noreferrer">{title.link}</a>{title.after}
-      </h1>
-      <p class="lead">{lead}</p>
-    </section>
-
-    <section class="facts">
-      <Marks />
-      <div class="cells">
-        {
-          cells.map((cell) => (
-            <div class="cell">
-              <span class="cell-label">{cell.label}</span>
-              <span class="cell-value">
-                <span>{cell.value}</span>
-                {cell.sub && (
-                  <span class="cell-sub" data-ago={cell.date} data-lang={lang}>
-                    {cell.sub}
-                  </span>
-                )}
-              </span>
-            </div>
-          ))
-        }
-      </div>
-    </section>
-
-    <Content components={components} />
-
-    <nav class="pager" aria-label={t.caseStudy}>
-      <Marks />
-      {
-        prev && (
-          <a href={prev.href} class="pager-link">
-            <span class="pager-label">{t.prev}</span>
-            <span class="pager-name">{prev.name}</span>
-          </a>
-        )
-      }
-      {
-        next && (
-          <a href={next.href} class="pager-link next">
-            <span class="pager-label">{t.next}</span>
-            <span class="pager-name">{next.name}</span>
-          </a>
-        )
-      }
-    </nav>
-
-    <PageFooter lang={lang} />
-  </main>
+  <Article
+    lang={lang}
+    backHref={localePath(lang, "/#experience")}
+    backLabel={t.backToExperience}
+    metaPrefix={t.caseStudy}
+    meta={`${two(index + 1)} / ${two(studies.length)}`}
+    lead={lead}
+    cells={cells}
+    pagerLabel={t.caseStudy}
+    prev={neighbor(-1)}
+    next={neighbor(1)}
+  >
+    <Fragment slot="title">
+      {title.before}<a href={titleHref} target="_blank" rel="noreferrer">{title.link}</a>{title.after}
+    </Fragment>
+    <Content components={mdxComponents} />
+  </Article>
 </Layout>
-
-<script>
-  import type { Lang } from "../../i18n/ui"
-  import { timeAgo } from "../../utils/dates"
-
-  // "2y ago" is computed at build time; refresh it so it doesn't go stale.
-  document.querySelectorAll<HTMLElement>("[data-ago]").forEach((el) => {
-    el.textContent = timeAgo(el.dataset.ago!, el.dataset.lang as Lang)
-  })
-</script>
-
-<style>
-  /* Section and Fig. numbers are CSS counters, incremented by the MDX components. */
-  .case {
-    counter-reset: section figure;
-  }
-
-  .hero {
-    position: relative;
-    padding: clamp(84px, 11vw, 136px) var(--px) clamp(44px, 6vw, 72px);
-  }
-
-  h1 {
-    max-width: 1000px;
-    font-size: clamp(28px, 4.4vw, 52px);
-    font-weight: 600;
-    letter-spacing: -0.05em;
-    line-height: 1.04;
-    text-wrap: balance;
-    overflow-wrap: break-word;
-    hyphens: auto;
-  }
-
-  /* Never split the client's name ("techkep-percr"). */
-  h1 a {
-    hyphens: manual;
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 0.12em;
-    transition: opacity 150ms ease;
-  }
-
-  h1 a:hover,
-  h1 a:focus-visible {
-    opacity: var(--dim);
-  }
-
-  .lead {
-    margin-top: clamp(28px, 4vw, 44px);
-    max-width: 640px;
-    font-size: clamp(16px, 1.6vw, 19px);
-    line-height: 1.55;
-    opacity: var(--dim);
-    text-wrap: pretty;
-    hyphens: auto;
-  }
-
-  .facts,
-  .pager {
-    position: relative;
-    border-top: 1px solid var(--line);
-  }
-
-  .cells {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1px;
-    background: var(--line);
-  }
-
-  /* flex-basis auto lets a long cell (Stack) drop to its own full-width row. */
-  .cell {
-    flex: 1 1 auto;
-    min-width: min(100%, 200px);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 20px var(--px);
-    background: var(--bg);
-  }
-
-  .cell-label {
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    opacity: var(--dim);
-  }
-
-  .cell-value {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 2px 10px;
-  }
-
-  .cell-sub {
-    font-size: 12px;
-    opacity: var(--dim);
-  }
-
-  .pager {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1px;
-    background: var(--line);
-  }
-
-  .pager-link {
-    flex: 1 1 320px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: clamp(28px, 4vw, 40px) var(--px);
-    background: var(--bg);
-    transition:
-      background-color 160ms ease,
-      color 160ms ease;
-  }
-
-  .pager-link:focus-visible {
-    background: var(--fg);
-    color: var(--bg);
-  }
-
-  /* Hover only with a mouse: on touch screens it stays stuck after a tap. */
-  @media (hover: hover) {
-    .pager-link:hover {
-      background: var(--fg);
-      color: var(--bg);
-    }
-  }
-
-  .next {
-    align-items: flex-end;
-    text-align: right;
-  }
-
-  .pager-label {
-    font-size: 12px;
-    opacity: var(--dim);
-  }
-
-  .pager-name {
-    font-size: clamp(20px, 2.6vw, 30px);
-    font-weight: 500;
-    letter-spacing: -0.035em;
-    line-height: 1.15;
-  }
-
-  /* Full-width: the ring goes inside, where the frame can't cover it. */
-  .pager-link:focus-visible {
-    outline-offset: -4px;
-  }
-
-  @media (hover: none) {
-    .pager-link:active {
-      background: var(--hover);
-    }
-  }
-
-  @media (max-width: 639.98px) {
-    /* In ~36-character lines automatic hyphens split almost every line. */
-    h1,
-    .lead {
-      hyphens: manual;
-    }
-
-    /* Data strip → key/value list. */
-    .cell {
-      flex: 1 1 100%;
-      flex-direction: row;
-      align-items: baseline;
-      gap: 12px;
-      padding: 14px var(--px);
-    }
-
-    .cell-label {
-      flex: 0 0 96px;
-    }
-  }
-</style>
