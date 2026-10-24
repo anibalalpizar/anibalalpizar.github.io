@@ -100,7 +100,7 @@ export function projectsData(lang: Lang, name: string, description: string) {
 /** Case study: an article written by the person. */
 export function caseData(
   lang: Lang,
-  page: { path: string; headline: string; description: string; date: string }
+  page: { path: string; headline: string; description: string; date: string; image: string }
 ) {
   return {
     "@context": "https://schema.org",
@@ -114,7 +114,7 @@ export function caseData(
         datePublished: page.date,
         url: abs(localePath(lang, page.path)),
         inLanguage: lang,
-        image: abs("/logo.jpg"),
+        image: abs(page.image),
         isPartOf: { "@id": WEBSITE_ID },
         author: { "@id": PERSON_ID },
         publisher: { "@id": PERSON_ID },

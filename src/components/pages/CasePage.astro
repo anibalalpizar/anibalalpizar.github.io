@@ -46,18 +46,19 @@ const cells = [
   ...facts.map((fact) => ({ label: t[fact.key], value: fact.value, sub: "" })),
 ]
 
+const headline = `${title.before}${title.link}${title.after}`
+// Generated at build time by src/pages/og/[lang]/[year]/[slug].png.ts.
+const ogImage = { path: `/og/${lang}${path}.png`, alt: headline }
+
 // Components available inside the MDX files without importing them.
 const components = { Section, Figure, Detail, Terms, Term, Video }
 ---
 
-<Layout lang={lang} title={`${title.before}${title.link}${title.after} — ${FULL_NAME}`} path={path} page="case"
+<Layout lang={lang} title={`${headline} — ${FULL_NAME}`} path={path} page="case"
   description={description}
-  structuredData={caseData(lang, {
-    path,
-    headline: `${title.before}${title.link}${title.after}`,
-    description,
-    date,
-  })}
+  ogImage={ogImage}
+  article={{ publishedTime: date }}
+  structuredData={caseData(lang, { path, headline, description, date, image: ogImage.path })}
 >
   <main class="page case">
     <section id="top" class="hero">
