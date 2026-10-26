@@ -1,6 +1,6 @@
 # anibalalpizar.github.io
 
-My personal website: experience, projects and case studies, in English and Spanish.
+My personal website: experience, projects, case studies and a blog, in English and Spanish.
 
 **Live:** https://anibalalpizar.github.io · **Spanish:** https://anibalalpizar.github.io/es/
 
@@ -23,6 +23,8 @@ npm run build    # type-checks, then builds to dist/
 | Interface text in both languages (nav, buttons, labels) | `src/i18n/ui.ts` |
 | Case studies | `src/content/cases/<en\|es>/<slug>.mdx` |
 | Case study images | `src/assets/cases/<year>/<slug>/` |
+| Blog posts | `src/content/posts/<en\|es>/<slug>.mdx` |
+| Blog post images | `src/assets/posts/<slug>/` |
 | CV | `public/Aníbal_CV.pdf` |
 
 Values that change with the language are written as `{ en: "…", es: "…" }`; plain strings are shared by both.
@@ -65,12 +67,44 @@ These components are available in every MDX file without importing them:
 | `<Detail letter="A" title="…" figure={{ … }}>` | The boxed "Detail A" callout, with an optional figure. |
 | `<Terms>` + `<Term name="…">…</Term>` | A "term: description" list. |
 | `<Video youtubeId="…" caption="…" />` | A YouTube video that only loads when clicked. |
+| `<Quote cite="…">…</Quote>` | A quote with an author. A plain Markdown quote (`> …`) looks the same, without the author. |
 
 Images are resized and converted to WebP at build time, and their width and height are read from the file.
 
+## Writing a blog post
+
+A post is also two MDX files with the same name, one in `en/` and one in `es/`. The file name is the URL: `src/content/posts/en/my-post.mdx` becomes `/blog/my-post/`, and the Spanish one `/es/blog/my-post/`.
+
+```mdx
+---
+title: "Redesigning my personal site"
+description: "One or two sentences, up to 160 characters. Shown under the title, in search results and in the RSS feed."
+date: "2026-10-24"
+tags: ["Astro", "MDX"]
+---
+
+<Section title="Why redesign it">
+
+Plain Markdown paragraphs go here.
+
+</Section>
+```
+
+The reading time is calculated from the text. Posts are listed newest first, and the list, the ⌘K menu, the RSS feeds and the link preview image update on their own.
+
+Inside a `<Section>`, besides paragraphs and the components above, posts can use plain Markdown:
+
+| Markdown | Result |
+| --- | --- |
+| `` `code` `` | Inline code. |
+| ```` ```ts title="env.ts" ```` | A code block with the file name and a Copy button. Without `title`, the bar shows the language. |
+| `### Title` | A subheading inside the section. |
+| `- item` / `1. item` | A list with "+" marks / a numbered list ("01."). |
+| `> text` | A quote. |
+
 ## Deploy
 
-Every push to `master` builds the site and publishes it to GitHub Pages (`.github/workflows/deploy.yml`). The sitemap and the `/about` redirect are generated during the build.
+Every push to `master` builds the site and publishes it to GitHub Pages (`.github/workflows/deploy.yml`). The sitemap, the RSS feeds (`/rss.xml` and `/es/rss.xml`), the link preview images and the `/about` redirect are generated during the build.
 
 ## License
 
