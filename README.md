@@ -11,7 +11,7 @@ Built with [Astro](https://astro.build) and MDX. Black and white, Geist Mono eve
 ```sh
 npm install
 npm run dev      # http://localhost:4321
-npm run build    # type-checks, then builds to dist/
+npm run build    # type-checks and then builds to dist/
 ```
 
 ## Where things live
