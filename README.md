@@ -4,7 +4,7 @@ My personal website: experience, projects, case studies and a blog, in English a
 
 **Live:** https://anibalalpizar.github.io · **Spanish:** https://anibalalpizar.github.io/es/
 
-Built with [Astro](https://astro.build) and MDX. Black and white, Geist Mono everywhere, dark theme by default, and a ⌘K command menu.
+Built with [Astro](https://astro.build) and MDX.
 
 ## Run it locally
 
