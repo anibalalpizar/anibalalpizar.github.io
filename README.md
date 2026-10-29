@@ -1,6 +1,6 @@
 # anibalalpizar.github.io
 
-My personal website: experience, projects, case studies and a blog, in English and Spanish.
+Personal website: experience, projects, case studies and a blog, in English and Spanish.
 
 **Live:** https://anibalalpizar.github.io · **Spanish:** https://anibalalpizar.github.io/es/
 
