@@ -14,7 +14,7 @@ npm run dev      # http://localhost:4321
 npm run build    # type-checks and then builds to dist/
 ```
 
-## Where things live
+## Where things live:
 
 | What | File |
 | --- | --- |
