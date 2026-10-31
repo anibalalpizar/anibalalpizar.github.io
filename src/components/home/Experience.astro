@@ -40,7 +40,7 @@ const lastYear = jobs.some((job) => job.current)
       return (
         <Row href={job.href} class:list={["row", { link: job.href }]}>
           <span class="year">
-            {job.current ? <><span class="dot" />{t.now}</> : job.year}
+            {job.current ? <Fragment><span class="dot" />{t.now}</Fragment> : job.year}
           </span>
           <div class="details">
             <span class="company">{job.company}</span>

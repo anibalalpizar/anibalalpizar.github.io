@@ -8,6 +8,9 @@ export default defineConfig({
   // GitHub Pages serves pages as folders (/projects/). Requiring the slash makes
   // the dev server reject links without it, so they can't slip back in.
   trailingSlash: 'always',
+  // Astro 7 strips whitespace between inline elements by default, which can glue
+  // words together ("Aníbal" + a link). Keep the previous, safe compression.
+  compressHTML: true,
   // Start loading an internal page when its link is hovered or focused, so it
   // opens almost instantly on click. External links are never prefetched.
   prefetch: {

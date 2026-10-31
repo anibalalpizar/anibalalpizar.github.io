@@ -55,12 +55,12 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
       page === "not-found" ? (
         <meta name="robots" content="noindex" />
       ) : (
-        <>
+        <Fragment>
           <link rel="canonical" href={urlFor(lang)} />
           <link rel="alternate" hreflang="en" href={urlFor("en")} />
           <link rel="alternate" hreflang="es" href={urlFor("es")} />
           <link rel="alternate" hreflang="x-default" href={urlFor("en")} />
-        </>
+        </Fragment>
       )
     }
     <meta property="og:title" content={title} />
