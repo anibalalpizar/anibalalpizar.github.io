@@ -1,4 +1,5 @@
-import { defineCollection, z } from "astro:content"
+import { defineCollection } from "astro:content"
+import { z } from "astro/zod"
 import { glob } from "astro/loaders"
 
 // One MDX file per case and language: src/content/cases/<en|es>/<slug>.mdx.
@@ -12,7 +13,7 @@ const cases = defineCollection({
     /** URL path without the language prefix, e.g. /2024/internship-at-tech-solutions. */
     path: z.string().regex(/^\/\d{4}\/[a-z0-9-]+$/),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    titleHref: z.string().url(),
+    titleHref: z.url(),
     /** The title, split around the part that links to titleHref. */
     title: z.object({ before: z.string(), link: z.string(), after: z.string() }),
     lead: z.string(),
