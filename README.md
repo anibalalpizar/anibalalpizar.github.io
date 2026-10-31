@@ -31,7 +31,7 @@ Values that change with the language are written as `{ en: "…", es: "…" }`; 
 
 ## Writing a case study
 
-Each case is two MDX files with the same name, one in `en/` and one in `es/`. The page URL comes from `path` in the frontmatter, and the Experience row it belongs to from `exp` (an id in `site.ts`). The frontmatter is validated in `src/content/config.ts`, so a typo stops the build instead of publishing a broken page.
+Each case is two MDX files with the same name, one in `en/` and one in `es/`. The page URL comes from `path` in the frontmatter, and the Experience row it belongs to from `exp` (an id in `site.ts`). The frontmatter is validated in `src/content.config.ts`, so a typo stops the build instead of publishing a broken page.
 
 ```mdx
 ---

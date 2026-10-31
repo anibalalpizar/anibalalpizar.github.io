@@ -1,5 +1,5 @@
 ---
-import type { CollectionEntry } from "astro:content"
+import { render, type CollectionEntry } from "astro:content"
 import Article from "../internal/Article.astro"
 import { mdxComponents } from "../mdx"
 import Layout from "../../layouts/Layout.astro"
@@ -16,7 +16,7 @@ interface Props {
 
 const { lang, entry } = Astro.props
 const { exp, path, date, titleHref, title, lead, facts, description = summary(lead) } = entry.data
-const { Content } = await entry.render()
+const { Content } = await render(entry)
 const t = ui[lang]
 const two = (n: number) => String(n).padStart(2, "0")
 

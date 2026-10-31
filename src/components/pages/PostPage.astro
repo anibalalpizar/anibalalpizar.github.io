@@ -1,4 +1,5 @@
 ---
+import { render } from "astro:content"
 import Article from "../internal/Article.astro"
 import { mdxComponents } from "../mdx"
 import Layout from "../../layouts/Layout.astro"
@@ -17,7 +18,7 @@ interface Props {
 
 const { lang, post, posts } = Astro.props
 const { title, description, date, tags } = post.data
-const { Content } = await post.render()
+const { Content } = await render(post)
 const t = ui[lang]
 const read = `${post.minutes} ${t.minRead}`
 

@@ -1,10 +1,11 @@
 import { defineCollection, z } from "astro:content"
+import { glob } from "astro/loaders"
 
 // One MDX file per case and language: src/content/cases/<en|es>/<slug>.mdx.
 // The body uses the components in src/components/mdx (Section, Figure, Detail…),
 // passed in by CasePage (src/components/mdx/index.ts), so the files don't need imports.
 const cases = defineCollection({
-  type: "content",
+  loader: glob({ pattern: "**/*.mdx", base: "./src/content/cases" }),
   schema: z.object({
     /** Matches an `experience` id in src/data/site.ts (sets order, role and short name). */
     exp: z.string(),
@@ -26,7 +27,7 @@ const cases = defineCollection({
 // Blog posts: src/content/posts/<en|es>/<slug>.mdx, with the same slug in both
 // languages (/blog/<slug>/ and /es/blog/<slug>/). Same MDX components as the cases.
 const posts = defineCollection({
-  type: "content",
+  loader: glob({ pattern: "**/*.mdx", base: "./src/content/posts" }),
   schema: z.object({
     title: z.string(),
     /** Intro under the title, and the description for search results and the RSS feed. */

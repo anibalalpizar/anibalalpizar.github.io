@@ -41,9 +41,8 @@ const label = title ?? (language && language !== "plaintext" ? language : "")
 
 <style>
   .code {
-    /* Astro renames Shiki's --astro-code-foreground / -background to these. */
-    --astro-code-color-text: var(--fg);
-    --astro-code-color-background: transparent;
+    --astro-code-foreground: var(--fg);
+    --astro-code-background: transparent;
     --astro-code-token-comment: var(--muted);
     min-width: 0;
     margin: 8px 0;

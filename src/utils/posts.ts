@@ -22,8 +22,8 @@ export async function getPosts(lang: Lang): Promise<Post[]> {
   const entries = await getCollection("posts", ({ id }) => id.startsWith(`${lang}/`))
   return entries
     .map((entry) => {
-      const slugName = entry.slug.slice(lang.length + 1)
-      return { ...entry, slugName, path: `/blog/${slugName}`, minutes: readingMinutes(entry.body) }
+      const slugName = entry.id.slice(lang.length + 1)
+      return { ...entry, slugName, path: `/blog/${slugName}`, minutes: readingMinutes(entry.body ?? "") }
     })
     .sort((a, b) => b.data.date.localeCompare(a.data.date))
 }
