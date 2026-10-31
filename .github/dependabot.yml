@@ -1,0 +1,26 @@
+# Dependabot opens a pull request when a dependency has a new version.
+# Once a month; small updates (minor and patch) come together in one pull
+# request, major versions one by one because they can need code changes.
+# Security fixes are opened right away, outside this schedule.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "⬆️"
+    groups:
+      dependencies:
+        update-types: [minor, patch]
+
+  # The actions used by the workflows in .github/workflows.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "⬆️"
+    groups:
+      actions:
+        patterns: ["*"]

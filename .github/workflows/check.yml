@@ -1,0 +1,22 @@
+name: Check
+
+# Builds the site on every pull request (including Dependabot's), so a green
+# check means the change type-checks and builds before it reaches master.
+on:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
