@@ -1,6 +1,6 @@
 ---
 import Marks from "../Marks.astro"
-import { ui, type Lang } from "../../i18n/ui"
+import { localePath, ui, type Lang } from "../../i18n/ui"
 
 interface Props {
   lang: Lang
@@ -8,12 +8,19 @@ interface Props {
 
 const { lang } = Astro.props
 const year = new Date().getFullYear()
+const blogHref = localePath(lang, "/blog")
+// Below 760px the nav links are hidden, so the footer is a visible way to the blog.
+// Not on the blog list itself.
+const showBlog = Astro.url.pathname !== blogHref
 ---
 
 <footer class="footer">
   <Marks />
   <span class="dim">© {year} Aníbal</span>
-  <a href="#top" class="dim link" data-scroll-to="top">{ui[lang].backTop}</a>
+  <span class="links">
+    {showBlog && <a href={blogHref} class="dim link">{ui[lang].navBlog}</a>}
+    <a href="#top" class="dim link" data-scroll-to="top">{ui[lang].backTop}</a>
+  </span>
 </footer>
 
 <style>
@@ -28,6 +35,11 @@ const year = new Date().getFullYear()
     padding: 20px var(--px);
     border-top: 1px solid var(--line);
     font-size: 12px;
+  }
+
+  .links {
+    display: flex;
+    gap: 20px;
   }
 
   .dim {

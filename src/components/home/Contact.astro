@@ -37,7 +37,10 @@ const year = new Date().getFullYear()
   </a>
   <footer class="footer">
     <span class="dim">© {year} Aníbal</span>
-    <a href={localePath(lang, "/#top")} class="dim link" data-scroll-to="top">{t.backTop}</a>
+    <span class="links">
+      <a href={localePath(lang, "/blog")} class="dim link">{t.navBlog}</a>
+      <a href={localePath(lang, "/#top")} class="dim link" data-scroll-to="top">{t.backTop}</a>
+    </span>
   </footer>
 </section>
 
@@ -115,6 +118,12 @@ const year = new Date().getFullYear()
     padding: 20px var(--px);
     border-top: 1px solid var(--line-inv);
     font-size: 12px;
+  }
+
+  /* Blog is here too: below 760px the nav links are hidden. */
+  .links {
+    display: flex;
+    gap: 20px;
   }
 
   .dim {
