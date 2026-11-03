@@ -88,7 +88,11 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
       title={`${ui[lang].navBlog} — Aníbal Alpízar`}
       href={new URL(lang === "es" ? "/es/rss.xml" : "/rss.xml", SITE_URL).href}
     />
-    <link rel="icon" type="image/jpg" href="/logo.jpg" />
+    <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+    <!-- Home-screen icon on iPhone and iPad; iOS rounds the corners itself. -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- Colour of the phone browser's address bar; switched with the theme. -->
+    <meta name="theme-color" content="#000000" />
     <meta name="generator" content={Astro.generator} />
     <link rel="preload" href={geistMonoLatin} as="font" type="font/woff2" crossorigin />
     <script is:inline define:vars={{ lang, spanishHref, page }}>
@@ -97,6 +101,7 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
         // Key must match STORAGE_KEY in src/scripts/theme.ts.
         if (localStorage.getItem("site-theme") === "light") {
           document.documentElement.dataset.theme = "light"
+          document.querySelector('meta[name="theme-color"]').content = "#ffffff"
         }
         // English pages send Spanish speakers to /es/ unless they chose English.
         // Key must match LANG_KEY in src/scripts/lang.ts.
