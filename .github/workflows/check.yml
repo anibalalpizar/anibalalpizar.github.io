@@ -1,7 +1,8 @@
 name: Check
 
-# Builds the site on every pull request (including Dependabot's), so a green
-# check means the change type-checks and builds before it reaches master.
+# Builds the site on every pull request (including Dependabot's) and checks its
+# internal links, so a green check means the change type-checks, builds and
+# has no broken links before it reaches master.
 on:
   pull_request:
     branches: [master]
@@ -20,3 +21,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - run: npm run check:links

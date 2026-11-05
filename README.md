@@ -12,6 +12,7 @@ Built with [Astro](https://astro.build) and MDX.
 npm install
 npm run dev      # http://localhost:4321
 npm run build    # type-checks and then builds to dist/
+npm run check:links  # checks that no internal link in dist/ is broken
 ```
 
 ## Where things live:

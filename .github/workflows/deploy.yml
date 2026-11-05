@@ -26,6 +26,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      # A broken internal link stops the deploy; the site online stays as it was.
+      - run: npm run check:links
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
