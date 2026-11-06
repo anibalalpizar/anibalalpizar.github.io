@@ -1,7 +1,7 @@
 ---
 import Marks from "../Marks.astro"
 import SectionHeader from "./SectionHeader.astro"
-import { featuredProjects, GITHUB_URL, kinds, projects } from "../../data/site"
+import { featuredProjects, GITHUB_URL, kinds, projects, sectionIndex } from "../../data/site"
 import { L, localePath, locales, ui, type Lang } from "../../i18n/ui"
 import { downloadsOf, getActivity } from "../../utils/activity"
 
@@ -17,7 +17,7 @@ const number = new Intl.NumberFormat(locales[lang])
 
 <section id="projects" class="projects">
   <Marks />
-  <SectionHeader index="02" title={t.navProjects} meta={t.moreGithub} metaHref={GITHUB_URL} />
+  <SectionHeader index={sectionIndex("projects")} title={t.navProjects} meta={t.moreGithub} metaHref={GITHUB_URL} />
   <div class="grid">
     {
       featuredProjects.map((project, i) => {

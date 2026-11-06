@@ -13,13 +13,23 @@ export const LINKEDIN_URL =
   profileUrl("LinkedIn") ?? "https://www.linkedin.com/in/anibalalpizar/"
 export const CV_URL = "/Aníbal_CV.pdf"
 
-/** Home sections, in page order. `key` picks the nav label from the UI strings. */
+/**
+ * Home sections, in page order. `key` picks the label from the UI strings.
+ * `nav: false` keeps a section out of the header (it's still in the ⌘K menu):
+ * at 760px the Spanish header has no room for one more link.
+ */
 export const sections = [
-  { id: "experience", key: "navExperience", index: "01" },
-  { id: "projects", key: "navProjects", index: "02" },
-  { id: "stack", key: "navStack", index: "03" },
-  { id: "contact", key: "navContact", index: "04" },
+  { id: "experience", key: "navExperience", index: "01", nav: true },
+  { id: "projects", key: "navProjects", index: "02", nav: true },
+  { id: "activity", key: "navActivity", index: "03", nav: false },
+  { id: "stack", key: "navStack", index: "04", nav: true },
+  { id: "contact", key: "navContact", index: "05", nav: true },
 ] as const
+
+export type SectionId = (typeof sections)[number]["id"]
+
+/** "01", "02"… of a home section. */
+export const sectionIndex = (id: SectionId) => sections.find((section) => section.id === id)!.index
 
 type Experience = {
   id: string

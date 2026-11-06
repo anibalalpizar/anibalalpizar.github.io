@@ -35,7 +35,7 @@ const blogCurrent = page === "blog" || page === "post"
   <nav class="nav" aria-label={t.ariaMain}>
     <div class="links">
       {
-        sections.map(({ id, key }) => {
+        sections.filter((section) => section.nav).map(({ id, key }) => {
           const current = id === currentSection
           // On /projects, "Projects" goes back to the top of that page.
           const scrollTarget = page === "projects" && id === "projects" ? "top" : id

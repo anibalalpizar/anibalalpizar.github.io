@@ -1,0 +1,920 @@
+---
+// Home "Activity": GitHub contributions and latest push, npm downloads and the
+// latest post. The numbers are fetched at build time (src/utils/activity.ts) and
+// the site rebuilds every night. A source that couldn't be reached is left out.
+import Marks from "../Marks.astro"
+import SectionHeader from "./SectionHeader.astro"
+import { GITHUB_URL, sectionIndex } from "../../data/site"
+import { localePath, locales, ui, type Lang } from "../../i18n/ui"
+import { getActivity, TIME_ZONE, type Day } from "../../utils/activity"
+import { relativeTime } from "../../utils/dates"
+import { getPosts } from "../../utils/posts"
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+const locale = locales[lang]
+const { updated, contributions, lastPush, npm } = await getActivity()
+const [latestPost] = await getPosts(lang)
+// The build runs in UTC; the date shown is the one in Costa Rica.
+const updatedDay = new Date(updated).toLocaleDateString("en-CA", { timeZone: TIME_ZONE })
+
+const number = new Intl.NumberFormat(locale)
+const plural = new Intl.PluralRules(locale)
+/** "1 day" / "12 days", in the page's language. */
+const count = (n: number, one: string, other: string) =>
+  `${number.format(n)} ${plural.select(n) === "one" ? one : other}`
+const utc = (date: string) => new Date(`${date}T00:00:00Z`)
+const longDate = new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" })
+const monthName = new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" })
+const weekdayName = new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" })
+
+// Calendar: one column per week, one row per weekday, Sunday first like GitHub.
+type Cell = (Day & { label: string }) | null
+const weeks: Cell[][] = []
+const months: { label: string; span: number }[] = []
+const weekdays = Array.from({ length: 7 }, (_, row) => ({
+  // 2023-01-01 was a Sunday.
+  name: weekdayName.format(utc(`2023-01-0${row + 1}`)),
+  // Like GitHub, only Mon, Wed and Fri are shown; the others are for screen readers.
+  shown: row % 2 === 1,
+}))
+
+if (contributions) {
+  const offset = utc(contributions.days[0].date).getUTCDay()
+  contributions.days.forEach((day, i) => {
+    const week = (weeks[Math.floor((i + offset) / 7)] ??= Array(7).fill(null))
+    const text =
+      day.count === 0 ? t.noContributions : count(day.count, t.contribution, t.contributions)
+    week[(i + offset) % 7] = { ...day, label: `${text} ${t.on} ${longDate.format(utc(day.date))}` }
+  })
+  // A month's name goes over the first week that starts in it, as on GitHub.
+  let previous = -1
+  for (const week of weeks) {
+    const first = week.find(Boolean)!
+    const month = utc(first.date).getUTCMonth()
+    if (month === previous) months.at(-1)!.span++
+    else months.push({ label: monthName.format(utc(first.date)), span: 1 })
+    previous = month
+  }
+}
+const lastDay = contributions?.days.at(-1)?.date
+
+// Weekly downloads: a line in a 100×100 box stretched to the plot, so the same
+// numbers place the HTML labels, gridlines and the hover dot as percentages.
+const trend = npm && (() => {
+  const values = npm.weeks.map((week) => week.downloads)
+  const max = Math.max(...values, 1)
+  // About three gridlines at round numbers (whole downloads, never 0.5).
+  const magnitude = Math.max(1, 10 ** Math.floor(Math.log10(max / 3)))
+  const step = [1, 2, 5, 10].map((m) => m * magnitude).find((s) => s * 3 >= max)!
+  const top = Math.ceil(max / step) * step
+  const x = (i: number) => (i / (values.length - 1)) * 100
+  const y = (v: number) => 100 - (v / top) * 100
+  const line = values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(2)} ${y(v).toFixed(2)}`).join(" ")
+  // Month names along the bottom, one every three months.
+  let seen = -1
+  const labels = npm.weeks
+    .map((week, i) => ({ i, month: utc(week.start).getUTCMonth(), date: week.start }))
+    .filter(({ month }) => (month !== seen ? ((seen = month), true) : false))
+    .slice(1)
+    .filter((_, k) => k % 3 === 0)
+    .map(({ i, date }) => ({ left: x(i), text: monthName.format(utc(date)) }))
+  return {
+    top,
+    ticks: Array.from({ length: top / step + 1 }, (_, k) => ({ value: k * step, top: y(k * step) })),
+    line,
+    area: `${line} L100 100 L0 100 Z`,
+    end: { left: x(values.length - 1), top: y(values.at(-1)!) },
+    labels,
+    last: npm.weeks.at(-1)!,
+  }
+})()
+const maxPackage = npm ? Math.max(...npm.packages.map((p) => p.downloads), 1) : 1
+
+// Strings the scripts need in the browser.
+const strings = {
+  locale,
+  download: t.download,
+  downloads: t.downloads,
+  weekOf: t.weekOf,
+}
+const weekText = (week: { start: string; downloads: number }) =>
+  `${t.weekOf} ${week.start} · ${count(week.downloads, t.download, t.downloads)}`
+---
+
+<section id="activity" class="activity" data-strings={JSON.stringify(strings)}>
+  <Marks />
+  <SectionHeader
+    index={sectionIndex("activity")}
+    title={t.navActivity}
+    meta={`${t.activityUpdated} · ${updatedDay}`}
+  />
+
+  {
+    (contributions || npm || lastPush) && (
+      <dl class="stats">
+        {
+          contributions && (
+            <Fragment>
+              <div class="stat">
+                <dt>{t.contributionsLabel}</dt>
+                <dd class="value">{number.format(contributions.total)}</dd>
+                <dd class="sub">{t.lastYear}</dd>
+              </div>
+              <div class="stat">
+                <dt>{t.longestStreak}</dt>
+                <dd class="value">{count(contributions.longestStreak, t.day, t.days)}</dd>
+                <dd class="sub">
+                  {t.currentStreak}: {count(contributions.currentStreak, t.day, t.days)}
+                </dd>
+              </div>
+            </Fragment>
+          )
+        }
+        {
+          npm && (
+            <div class="stat">
+              <dt>{t.npmDownloads}</dt>
+              <dd class="value">{number.format(npm.total)}</dd>
+              <dd class="sub">
+                {npm.packages.length} {t.packagesAllTime}
+              </dd>
+            </div>
+          )
+        }
+        {
+          lastPush && (
+            <div class="stat">
+              <dt>{t.latestPush}</dt>
+              <dd class="value">
+                <a href={lastPush.url} target="_blank" rel="noreferrer" class="repo">
+                  {/* Long names like "anibalalpizar.github.io" wrap at the dots. */}
+                  {lastPush.repo.split(".").map((part, i) => <Fragment>{i > 0 && <Fragment>.<wbr /></Fragment>}{part}</Fragment>)}{" "}
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </dd>
+              <dd class="sub">
+                <time datetime={lastPush.date} data-relative={lastPush.date} data-lang={lang}>
+                  {relativeTime(lastPush.date, lang, new Date(updated))}
+                </time>
+              </dd>
+            </div>
+          )
+        }
+      </dl>
+    )
+  }
+
+  {
+    contributions && (
+      <div class="block" data-calendar>
+        <div class="block-head">
+          <h3 class="label">{t.contributionsLabel} · GitHub</h3>
+          <a href={GITHUB_URL} target="_blank" rel="noreferrer" class="source">
+            GitHub ↗
+          </a>
+        </div>
+        <div class="scroller">
+          <table role="grid" aria-readonly="true" class="calendar">
+            <caption class="sr-only">{t.calendarCaption}</caption>
+            <thead>
+              <tr>
+                <td />
+                {months.map((month) => (
+                  <th scope="colgroup" colspan={month.span} class="month">
+                    {month.span > 1 && month.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {weekdays.map((weekday, row) => (
+                <tr>
+                  <th scope="row" class="weekday">
+                    <span class:list={{ "sr-only": !weekday.shown }}>{weekday.name}</span>
+                  </th>
+                  {weeks.map((week) => {
+                    const day = week[row]
+                    return day ? (
+                      <td
+                        data-level={day.level}
+                        aria-label={day.label}
+                        tabindex={day.date === lastDay ? 0 : undefined}
+                      />
+                    ) : (
+                      <td class="blank" />
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div class="foot">
+          <span class="readout" aria-hidden="true" data-readout>
+            {contributions.days[0].date} → {lastDay}
+          </span>
+          <span class="legend" aria-hidden="true">
+            <span>{t.less}</span>
+            {[0, 1, 2, 3, 4].map((level) => (
+              <span class="swatch" data-level={level} />
+            ))}
+            <span>{t.more}</span>
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  {
+    npm && trend && (
+      <div class="npm">
+        <div class="block trend" data-trend data-weeks={JSON.stringify(npm.weeks)} data-top={trend.top}>
+          <div class="block-head">
+            <h3 class="label">{t.weeklyDownloads} · npm</h3>
+          </div>
+          <div class="chart">
+            <div class="y-axis" aria-hidden="true">
+              {trend.ticks.map((tick) => (
+                <span style={`top: ${tick.top}%`}>{number.format(tick.value)}</span>
+              ))}
+            </div>
+            {/* A slider over the weeks: arrow keys move it, and screen readers
+                read the week and its downloads. */}
+            <div
+              class="plot"
+              tabindex="0"
+              role="slider"
+              aria-label={t.weeklyDownloads}
+              aria-valuemin="0"
+              aria-valuemax={npm.weeks.length - 1}
+              aria-valuenow={npm.weeks.length - 1}
+              aria-valuetext={weekText(trend.last)}
+              data-plot
+            >
+              {trend.ticks.map((tick) => (
+                <span class="grid-line" style={`top: ${tick.top}%`} />
+              ))}
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <path class="area" d={trend.area} />
+                <path class="line" d={trend.line} vector-effect="non-scaling-stroke" />
+              </svg>
+              <span class="crosshair" hidden data-crosshair />
+              <span class="dot" style={`left: ${trend.end.left}%; top: ${trend.end.top}%`} data-dot />
+            </div>
+            <div class="x-axis" aria-hidden="true">
+              {trend.labels.map((label) => (
+                <span style={`left: ${label.left}%`}>{label.text}</span>
+              ))}
+            </div>
+          </div>
+          <div class="foot">
+            <span class="readout" aria-hidden="true" data-readout>
+              {weekText(trend.last)}
+            </span>
+          </div>
+          <table class="sr-only">
+            <caption>{t.trendCaption}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{t.week}</th>
+                <th scope="col">{t.downloadsHeader}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {npm.weeks.map((week) => (
+                <tr>
+                  <td>{week.start}</td>
+                  <td>{week.downloads}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="block packages">
+          <div class="block-head">
+            <h3 class="label">{t.byPackage}</h3>
+          </div>
+          <ol class="bars">
+            {npm.packages.map((pkg) => (
+              <li>
+                <a href={pkg.url} target="_blank" rel="noreferrer" class="package">
+                  {pkg.name} <span aria-hidden="true">↗</span>
+                </a>
+                <span class="bar-row">
+                  <span class="bar" style={`--share: ${pkg.downloads / maxPackage}`} />
+                  <span class="bar-value">
+                    {count(pkg.downloads, t.download, t.downloads)}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    )
+  }
+
+  {
+    latestPost && (
+      <a href={localePath(lang, latestPost.path)} class="latest">
+        <span class="latest-label">{t.latestArticle}</span>
+        <span class="latest-title">{latestPost.data.title}</span>
+        <span class="latest-meta">
+          <time datetime={latestPost.data.date}>{latestPost.data.date}</time>
+          <span aria-hidden="true">→</span>
+        </span>
+      </a>
+    )
+  }
+</section>
+
+<script>
+  import type { Lang } from "../../i18n/ui"
+  import { relativeTime } from "../../utils/dates"
+
+  const section = document.querySelector<HTMLElement>("#activity")
+  const strings: Record<string, string> = JSON.parse(section?.dataset.strings ?? "{}")
+  const number = new Intl.NumberFormat(strings.locale)
+  const plural = new Intl.PluralRules(strings.locale)
+  const count = (n: number, one: string, other: string) =>
+    `${number.format(n)} ${plural.select(n) === "one" ? one : other}`
+
+  // "3 hours ago" is computed at build time; refresh it, the page is built once a day.
+  section?.querySelectorAll<HTMLElement>("[data-relative]").forEach((el) => {
+    el.textContent = relativeTime(el.dataset.relative!, el.dataset.lang as Lang)
+  })
+
+  // Calendar: hovering or focusing a day shows its label in the readout. The grid
+  // is one tab stop; arrow keys move a day (up/down) or a week (left/right).
+  const calendar = section?.querySelector<HTMLElement>("[data-calendar]")
+  if (calendar) {
+    const readout = calendar.querySelector<HTMLElement>("[data-readout]")!
+    const idle = readout.textContent
+    // Oldest first: column by column (weeks), then down each column (weekdays).
+    const position = (cell: HTMLTableCellElement) =>
+      cell.cellIndex * 7 + (cell.parentElement as HTMLTableRowElement).rowIndex
+    const days = [...calendar.querySelectorAll<HTMLTableCellElement>("td[data-level]")].sort(
+      (a, b) => position(a) - position(b)
+    )
+
+    const show = (day: HTMLElement) => {
+      readout.textContent = day.getAttribute("aria-label")
+    }
+    const reset = () => {
+      if (!calendar.contains(document.activeElement)) readout.textContent = idle
+    }
+
+    calendar.addEventListener("pointerover", (event) => {
+      const day = (event.target as Element).closest<HTMLElement>("td[data-level]")
+      if (day) show(day)
+    })
+    calendar.addEventListener("pointerleave", reset)
+    calendar.addEventListener("focusin", (event) => {
+      const day = (event.target as Element).closest<HTMLElement>("td[data-level]")
+      if (day) show(day)
+    })
+    calendar.addEventListener("focusout", () => requestAnimationFrame(reset))
+
+    calendar.addEventListener("keydown", (event) => {
+      const current = days.indexOf(event.target as HTMLTableCellElement)
+      if (current < 0) return
+      const moves: Record<string, number> = {
+        ArrowLeft: -7,
+        ArrowRight: 7,
+        ArrowUp: -1,
+        ArrowDown: 1,
+        Home: -current,
+        End: days.length - 1 - current,
+      }
+      if (!(event.key in moves)) return
+      event.preventDefault()
+      const next = days[Math.min(days.length - 1, Math.max(0, current + moves[event.key]))]
+      days[current].removeAttribute("tabindex")
+      next.tabIndex = 0
+      next.focus()
+    })
+  }
+
+  // Weekly downloads: a crosshair follows the pointer (or the arrow keys) and
+  // snaps to the nearest week.
+  const trend = section?.querySelector<HTMLElement>("[data-trend]")
+  if (trend) {
+    const weeks: { start: string; downloads: number }[] = JSON.parse(trend.dataset.weeks!)
+    const top = Number(trend.dataset.top)
+    const plot = trend.querySelector<HTMLElement>("[data-plot]")!
+    const crosshair = trend.querySelector<HTMLElement>("[data-crosshair]")!
+    const dot = trend.querySelector<HTMLElement>("[data-dot]")!
+    const readout = trend.querySelector<HTMLElement>("[data-readout]")!
+    const last = weeks.length - 1
+    let index = last
+
+    const show = (i: number, active: boolean) => {
+      index = Math.min(last, Math.max(0, i))
+      const week = weeks[index]
+      const left = `${(index / last) * 100}%`
+      dot.style.left = left
+      dot.style.top = `${100 - (week.downloads / top) * 100}%`
+      crosshair.style.left = left
+      crosshair.hidden = !active
+      readout.textContent = `${strings.weekOf} ${week.start} · ${count(week.downloads, strings.download, strings.downloads)}`
+      plot.setAttribute("aria-valuenow", String(index))
+      plot.setAttribute("aria-valuetext", readout.textContent)
+    }
+
+    plot.addEventListener("pointermove", (event) => {
+      const box = plot.getBoundingClientRect()
+      show(Math.round(((event.clientX - box.left) / box.width) * last), true)
+    })
+    plot.addEventListener("pointerleave", () => show(last, false))
+    plot.addEventListener("blur", () => show(last, false))
+    plot.addEventListener("keydown", (event) => {
+      const moves: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, Home: -index, End: last - index }
+      if (!(event.key in moves)) return
+      event.preventDefault()
+      show(index + moves[event.key], true)
+    })
+  }
+</script>
+
+<style>
+  .activity {
+    position: relative;
+    border-top: 1px solid var(--line);
+  }
+
+  /* Key numbers: the same strip as the facts under the hero. */
+  .stats {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    background: var(--line);
+    border-top: 1px solid var(--line);
+  }
+
+  .stat {
+    flex: 1 1 200px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px var(--px);
+    background: var(--bg);
+  }
+
+  dt,
+  .label {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: var(--dim);
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  .value {
+    margin-top: 4px;
+    font-size: clamp(22px, 2.6vw, 28px);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  .sub {
+    font-size: 12px;
+    opacity: var(--dim);
+  }
+
+  .repo {
+    font-size: clamp(16px, 1.6vw, 18px);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    text-underline-offset: 3px;
+  }
+
+  .repo:hover,
+  .repo:focus-visible {
+    text-decoration: underline;
+  }
+
+  .block {
+    min-width: 0;
+    padding: clamp(28px, 4vw, 40px) var(--px);
+    background: var(--bg);
+  }
+
+  .activity > .block {
+    border-top: 1px solid var(--line);
+  }
+
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .source {
+    font-size: 12px;
+    opacity: var(--dim);
+    transition: opacity 150ms ease;
+  }
+
+  .source:hover,
+  .source:focus-visible {
+    opacity: 1;
+  }
+
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 24px;
+    margin-top: 16px;
+    font-size: 12px;
+  }
+
+  .readout {
+    opacity: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Calendar ───────────────────────────────────────── */
+
+  /* Cells fill the frame on wide screens and stay at least 10px on phones,
+     where the calendar scrolls sideways. row-reverse starts it at today. */
+  .scroller {
+    --cell: clamp(10px, calc((min(100vw, 1120px) - 2 * var(--px) - 48px) / 53 - 3px), 16px);
+    display: flex;
+    flex-direction: row-reverse;
+    overflow-x: auto;
+    margin: -4px;
+    padding: 4px;
+  }
+
+  .calendar {
+    flex: 0 0 auto;
+    margin-right: auto;
+    border-collapse: separate;
+    border-spacing: 3px;
+  }
+
+  .month,
+  .weekday {
+    padding: 0;
+    font-size: 11px;
+    font-weight: 400;
+    text-align: left;
+    white-space: nowrap;
+    opacity: var(--dim);
+  }
+
+  .month {
+    height: 18px;
+    vertical-align: top;
+  }
+
+  .weekday {
+    padding-right: 6px;
+    line-height: 1;
+  }
+
+  td[data-level],
+  .blank,
+  .swatch {
+    width: var(--cell);
+    height: var(--cell);
+    padding: 0;
+    border-radius: 2px;
+  }
+
+  /* One hue, darker (or brighter, in the dark theme) as the count grows. */
+  [data-level="0"] {
+    background: var(--line);
+  }
+
+  [data-level="1"] {
+    background: color-mix(in srgb, var(--fg) 30%, var(--bg));
+  }
+
+  [data-level="2"] {
+    background: color-mix(in srgb, var(--fg) 52%, var(--bg));
+  }
+
+  [data-level="3"] {
+    background: color-mix(in srgb, var(--fg) 76%, var(--bg));
+  }
+
+  [data-level="4"] {
+    background: var(--fg);
+  }
+
+  td[data-level]:hover {
+    outline: 1px solid var(--fg);
+    outline-offset: 1px;
+  }
+
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: var(--dim);
+  }
+
+  .legend > span:first-child {
+    margin-right: 4px;
+  }
+
+  .legend > span:last-child {
+    margin-left: 4px;
+  }
+
+  .swatch {
+    --cell: 10px;
+    display: inline-block;
+  }
+
+  /* ── npm ────────────────────────────────────────────── */
+
+  .npm {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    background: var(--line);
+    border-top: 1px solid var(--line);
+  }
+
+  .trend {
+    flex: 2 1 460px;
+  }
+
+  .packages {
+    flex: 1 1 280px;
+  }
+
+  /* Plot + axis band in one box, so the month names are never cropped. */
+  .chart {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: 160px auto;
+    column-gap: 12px;
+  }
+
+  .y-axis {
+    position: relative;
+    min-width: 3ch;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    opacity: var(--dim);
+  }
+
+  .y-axis span {
+    position: absolute;
+    right: 0;
+    transform: translateY(-50%);
+    line-height: 1;
+  }
+
+  .plot {
+    position: relative;
+    cursor: crosshair;
+    touch-action: pan-y;
+  }
+
+  .plot:focus-visible {
+    outline-offset: 6px;
+  }
+
+  .grid-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--line);
+  }
+
+  svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .area {
+    fill: color-mix(in srgb, var(--fg) 10%, transparent);
+  }
+
+  .line {
+    fill: none;
+    stroke: var(--fg);
+    stroke-width: 2px;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .crosshair {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--fg);
+    opacity: var(--dim);
+    pointer-events: none;
+  }
+
+  .crosshair[hidden] {
+    display: none;
+  }
+
+  /* 8px dot with a 2px ring in the surface colour, so it reads on the line. */
+  .dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--bg);
+    border-radius: 50%;
+    background: var(--fg);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .x-axis {
+    position: relative;
+    grid-column: 2;
+    height: 24px;
+    font-size: 11px;
+    opacity: var(--dim);
+  }
+
+  .x-axis span {
+    position: absolute;
+    top: 8px;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  /* Ranked bars: one hue, square at the start, rounded at the value end. */
+  .bars {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .bars li {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .package {
+    align-self: flex-start;
+    font-size: 14px;
+    text-underline-offset: 3px;
+  }
+
+  .package:hover,
+  .package:focus-visible {
+    text-decoration: underline;
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .bar {
+    flex: 0 0 auto;
+    width: calc(var(--share) * (100% - 16ch));
+    min-width: 2px;
+    height: 8px;
+    border-radius: 0 4px 4px 0;
+    background: var(--fg);
+  }
+
+  .bar-value {
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: var(--dim);
+  }
+
+  /* ── Latest article ─────────────────────────────────── */
+
+  .latest {
+    display: grid;
+    grid-template-columns: minmax(56px, 120px) minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: baseline;
+    padding: 22px var(--px);
+    border-top: 1px solid var(--line);
+    transition:
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .latest:focus-visible {
+    background: var(--fg);
+    color: var(--bg);
+    outline-offset: -4px;
+  }
+
+  /* Hover only with a mouse: on touch screens it stays stuck after a tap. */
+  @media (hover: hover) {
+    .latest:hover {
+      background: var(--fg);
+      color: var(--bg);
+    }
+  }
+
+  @media (hover: none) {
+    .latest:active {
+      background: var(--hover);
+    }
+  }
+
+  .latest-label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: var(--dim);
+  }
+
+  .latest-title {
+    font-size: clamp(18px, 2vw, 22px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+
+  .latest-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Phones: labels go above their content (the site-wide rule). */
+  @media (max-width: 639.98px) {
+    .stat {
+      flex: 1 1 100%;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px 12px;
+      padding: 14px var(--px);
+    }
+
+    dt {
+      flex: 0 0 116px;
+    }
+
+    .value {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .sub {
+      flex: 1 1 100%;
+      padding-left: calc(116px + 12px);
+    }
+
+    .chart {
+      grid-template-rows: 120px auto;
+    }
+
+    .latest {
+      grid-template-columns: minmax(0, 1fr) auto;
+      row-gap: 6px;
+    }
+
+    .latest-label {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .latest {
+      transition: none;
+    }
+  }
+</style>

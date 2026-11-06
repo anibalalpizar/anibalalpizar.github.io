@@ -1,7 +1,7 @@
 ---
 import Marks from "../Marks.astro"
 import SectionHeader from "./SectionHeader.astro"
-import { stack } from "../../data/site"
+import { sectionIndex, stack } from "../../data/site"
 import { L, ui, type Lang } from "../../i18n/ui"
 
 interface Props {
@@ -13,7 +13,7 @@ const { lang } = Astro.props
 
 <section id="stack" class="stack">
   <Marks />
-  <SectionHeader index="03" title={ui[lang].navStack} />
+  <SectionHeader index={sectionIndex("stack")} title={ui[lang].navStack} />
   {
     stack.map((group) => (
       <div class="row">

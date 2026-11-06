@@ -1,6 +1,6 @@
 ---
 import Marks from "../Marks.astro"
-import { CV_URL, EMAIL, GITHUB_URL, LINKEDIN_URL } from "../../data/site"
+import { CV_URL, EMAIL, GITHUB_URL, LINKEDIN_URL, sectionIndex } from "../../data/site"
 import { localePath, ui, type Lang } from "../../i18n/ui"
 
 interface Props {
@@ -15,7 +15,7 @@ const year = new Date().getFullYear()
 <section id="contact" class="contact">
   <Marks />
   <div class="eyebrow">
-    <span>04</span>
+    <span>{sectionIndex("contact")}</span>
     <span class="caps">{t.navContact}</span>
   </div>
   <h2>{t.connect}</h2>

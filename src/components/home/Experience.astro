@@ -1,7 +1,7 @@
 ---
 import Marks from "../Marks.astro"
 import SectionHeader from "./SectionHeader.astro"
-import { experience } from "../../data/site"
+import { experience, sectionIndex } from "../../data/site"
 import { L, localePath, ui, type Lang } from "../../i18n/ui"
 import { monthsSince } from "../../utils/dates"
 
@@ -33,7 +33,7 @@ const lastYear = jobs.some((job) => job.current)
 
 <section id="experience" class="experience">
   <Marks />
-  <SectionHeader index="01" title={t.navExperience} meta={`${firstYear} — ${lastYear}`} />
+  <SectionHeader index={sectionIndex("experience")} title={t.navExperience} meta={`${firstYear} — ${lastYear}`} />
   {
     jobs.map((job) => {
       const Row = job.href ? "a" : "div"

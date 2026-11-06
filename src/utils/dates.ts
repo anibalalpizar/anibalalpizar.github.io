@@ -40,3 +40,20 @@ export function formatDate(date: string, lang: Lang) {
     day: "numeric",
   })
 }
+
+const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ["year", 31_536_000],
+  ["month", 2_592_000],
+  ["week", 604_800],
+  ["day", 86_400],
+  ["hour", 3_600],
+  ["minute", 60],
+]
+
+/** "3 hours ago" / "hace 3 horas", "yesterday" / "ayer", for an ISO date and time. */
+export function relativeTime(iso: string, lang: Lang, now = new Date()) {
+  const seconds = (Date.parse(iso) - now.getTime()) / 1000
+  const format = new Intl.RelativeTimeFormat(LOCALES[lang], { numeric: "auto" })
+  const [unit, size] = UNITS.find(([, size]) => Math.abs(seconds) >= size) ?? UNITS.at(-1)!
+  return format.format(Math.round(seconds / size), unit)
+}
