@@ -26,6 +26,7 @@ npm run check:links  # checks that no internal link in dist/ is broken
 | Case study images | `src/assets/cases/<year>/<slug>/` |
 | Blog posts | `src/content/posts/<en\|es>/<slug>.mdx` |
 | Blog post images | `src/assets/posts/<slug>/` |
+| Activity numbers (GitHub, npm) | `src/utils/activity.ts` |
 | CV | `public/Aníbal_CV.pdf` |
 
 Values that change with the language are written as `{ en: "…", es: "…" }`; plain strings are shared by both.
@@ -106,6 +107,13 @@ Inside a `<Section>`, besides paragraphs and the components above, posts can use
 ## Deploy
 
 Every push to `master` builds the site and publishes it to GitHub Pages (`.github/workflows/deploy.yml`). The sitemap, the RSS feeds (`/rss.xml` and `/es/rss.xml`), the link preview images and the `/about` redirect are generated during the build.
+
+The home page's Activity section (GitHub contributions and latest push, npm downloads) and the download counts on the project cards are fetched during the build too, so the site also rebuilds every night at 03:00 Costa Rica time. If GitHub or npm can't be reached:
+
+- On a push or a local build, that part is left out and the rest of the site is published.
+- On the nightly rebuild, the run stops and the site online keeps the previous day's numbers.
+
+GitHub pauses scheduled workflows in repositories without commits for 60 days; it sends an email first, and any commit turns it back on.
 
 ## License
 
