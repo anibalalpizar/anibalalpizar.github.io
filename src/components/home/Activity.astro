@@ -9,6 +9,7 @@ import { localePath, locales, ui, type Lang } from "../../i18n/ui"
 import { getActivity, TIME_ZONE, type Day } from "../../utils/activity"
 import { relativeTime } from "../../utils/dates"
 import { getPosts } from "../../utils/posts"
+import { postTransition, transitionAttrs } from "../../utils/transitions"
 
 interface Props {
   lang: Lang
@@ -322,7 +323,11 @@ const weekText = (week: { start: string; downloads: number }) =>
 
   {
     latestPost && (
-      <a href={localePath(lang, latestPost.path)} class="latest">
+      <a
+        href={localePath(lang, latestPost.path)}
+        class="latest"
+        {...transitionAttrs(postTransition(latestPost.slugName), localePath(lang, latestPost.path))}
+      >
         <span class="latest-label">{t.latestArticle}</span>
         <span class="latest-title">{latestPost.data.title}</span>
         <span class="latest-meta">

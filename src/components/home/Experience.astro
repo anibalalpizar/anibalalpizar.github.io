@@ -4,6 +4,7 @@ import SectionHeader from "./SectionHeader.astro"
 import { experience, sectionIndex } from "../../data/site"
 import { L, localePath, ui, type Lang } from "../../i18n/ui"
 import { monthsSince } from "../../utils/dates"
+import { caseTransition, transitionAttrs } from "../../utils/transitions"
 
 interface Props {
   lang: Lang
@@ -22,6 +23,8 @@ const jobs = experience.map((job) => {
     note: current ? monthsSince(job.startDate, lang) : L(job.note, lang),
     startDate: job.startDate,
     href: job.casePath && localePath(lang, job.casePath),
+    // The row grows into its case study's hero (see Layout.astro).
+    transition: job.casePath && caseTransition(job.casePath),
   }
 })
 
@@ -38,7 +41,11 @@ const lastYear = jobs.some((job) => job.current)
     jobs.map((job) => {
       const Row = job.href ? "a" : "div"
       return (
-        <Row href={job.href} class:list={["row", { link: job.href }]}>
+        <Row
+          href={job.href}
+          class:list={["row", { link: job.href }]}
+          {...transitionAttrs(job.transition, job.href)}
+        >
           <span class="year">
             {job.current ? <Fragment><span class="dot" />{t.now}</Fragment> : job.year}
           </span>

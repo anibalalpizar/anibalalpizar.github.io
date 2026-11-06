@@ -5,6 +5,7 @@ import Marks from "../Marks.astro"
 import PageBar from "./PageBar.astro"
 import PageFooter from "./PageFooter.astro"
 import { ui, type Lang } from "../../i18n/ui"
+import { transitionAttrs } from "../../utils/transitions"
 
 export interface Cell {
   label: string
@@ -17,6 +18,8 @@ export interface Cell {
 export interface Neighbor {
   name: string
   href: string
+  /** Its page's transition name: the link grows into that page's hero. */
+  transition?: string
 }
 
 interface Props {
@@ -31,15 +34,17 @@ interface Props {
   pagerLabel: string
   prev?: Neighbor
   next?: Neighbor
+  /** Shared with the row or link that opens this page (src/utils/transitions.ts). */
+  transition?: string
 }
 
-const { lang, backHref, backLabel, meta, metaPrefix, lead, cells, pagerLabel, prev, next } =
+const { lang, backHref, backLabel, meta, metaPrefix, lead, cells, pagerLabel, prev, next, transition } =
   Astro.props
 const t = ui[lang]
 ---
 
 <main class="page article">
-  <section id="top" class="hero">
+  <section id="top" class="hero" {...transitionAttrs(transition)}>
     <PageBar backHref={backHref} backLabel={backLabel} metaPrefix={metaPrefix} meta={meta} />
     <h1><slot name="title" /></h1>
     <p class="lead">{lead}</p>
@@ -73,13 +78,13 @@ const t = ui[lang]
       <nav class="pager" aria-label={pagerLabel}>
         <Marks />
         {prev && (
-          <a href={prev.href} class="pager-link">
+          <a href={prev.href} class="pager-link" {...transitionAttrs(prev.transition, prev.href)}>
             <span class="pager-label">{t.prev}</span>
             <span class="pager-name">{prev.name}</span>
           </a>
         )}
         {next && (
-          <a href={next.href} class="pager-link next">
+          <a href={next.href} class="pager-link next" {...transitionAttrs(next.transition, next.href)}>
             <span class="pager-label">{t.next}</span>
             <span class="pager-name">{next.name}</span>
           </a>

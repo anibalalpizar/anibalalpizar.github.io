@@ -8,6 +8,7 @@ import { localePath, ui, type Lang } from "../../i18n/ui"
 import { formatDate, timeAgo } from "../../utils/dates"
 import type { Post } from "../../utils/posts"
 import { postData } from "../../utils/structuredData"
+import { postTransition } from "../../utils/transitions"
 
 interface Props {
   lang: Lang
@@ -26,7 +27,13 @@ const read = `${post.minutes} ${t.minRead}`
 const index = posts.findIndex((other) => other.id === post.id)
 const neighbor = (offset: number) => {
   const other = posts[index + offset]
-  return other && { name: other.data.title, href: localePath(lang, other.path) }
+  return (
+    other && {
+      name: other.data.title,
+      href: localePath(lang, other.path),
+      transition: postTransition(other.slugName),
+    }
+  )
 }
 
 const cells = [
@@ -62,6 +69,7 @@ const ogImage = { path: `/og/${lang}${post.path}.png`, alt: title }
     pagerLabel={t.navBlog}
     prev={neighbor(-1)}
     next={neighbor(1)}
+    transition={postTransition(post.slugName)}
   >
     <Fragment slot="title">{title}</Fragment>
     <Content components={mdxComponents} />

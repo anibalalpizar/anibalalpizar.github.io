@@ -7,6 +7,7 @@ import { FULL_NAME } from "../../data/site"
 import { localePath, ui, type Lang } from "../../i18n/ui"
 import { getPosts } from "../../utils/posts"
 import { blogData } from "../../utils/structuredData"
+import { postTransition, transitionAttrs } from "../../utils/transitions"
 
 interface Props {
   lang: Lang
@@ -44,7 +45,11 @@ const rssHref = lang === "es" ? "/es/rss.xml" : "/rss.xml"
       <Marks />
       {
         posts.map((post) => (
-          <a href={localePath(lang, post.path)} class="row">
+          <a
+            href={localePath(lang, post.path)}
+            class="row"
+            {...transitionAttrs(postTransition(post.slugName), localePath(lang, post.path))}
+          >
             <time class="date" datetime={post.data.date}>
               {post.data.date}
             </time>

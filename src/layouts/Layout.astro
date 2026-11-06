@@ -138,6 +138,62 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
         })
       } catch {}
     </script>
+    <script is:inline>
+      // Page transitions: elements with data-transition (src/utils/transitions.ts)
+      // get their name only while a page is left or shown, and only if they're on
+      // screen and go with the page on the other side: the link that was followed,
+      // the row of the page we came back from, or this page's own hero.
+      ;(function () {
+        function path(url) {
+          try {
+            return new URL(url, location.href).pathname
+          } catch (e) {
+            return ""
+          }
+        }
+        function onScreen(el) {
+          var box = el.getBoundingClientRect()
+          return box.bottom > 0 && box.top < innerHeight
+        }
+        function nameFor(other) {
+          document.querySelectorAll("[data-transition]").forEach(function (el) {
+            var target = el.getAttribute("data-transition-for")
+            el.style.viewTransitionName =
+              (target == null || path(target) === other) && onScreen(el) ? el.getAttribute("data-transition") : ""
+          })
+        }
+        // A page restored by the back button starts again with no names.
+        addEventListener("pageshow", function (event) {
+          if (!event.persisted) return
+          document.querySelectorAll("[data-transition]").forEach(function (el) {
+            el.style.viewTransitionName = ""
+          })
+        })
+        // Browsers without the Navigation API don't say where a link leads; the click does.
+        var followed = ""
+        addEventListener("click", function (event) {
+          var link = event.target.closest && event.target.closest("a[href]")
+          if (link) followed = link.href
+        }, true)
+        addEventListener("pageswap", function (event) {
+          if (event.viewTransition) nameFor(path(event.activation ? event.activation.entry.url : followed))
+        })
+        addEventListener("pagereveal", function (event) {
+          if (!event.viewTransition) return
+          // The Navigation API (not in TypeScript's types yet) gives the page we came from.
+          var nav = /** @type {any} */ (window).navigation
+          var activation = nav && nav.activation
+          // A link to a section of this page (/#experience): the browser would
+          // scroll there only after the page shows, so it would appear at the top
+          // and jump. Go there first. Back/forward keeps its own scroll position.
+          if (location.hash && activation && activation.navigationType !== "traverse") {
+            var section = document.getElementById(decodeURIComponent(location.hash.slice(1)))
+            if (section) section.scrollIntoView()
+          }
+          nameFor(path(activation && activation.from ? activation.from.url : document.referrer))
+        })
+      })()
+    </script>
   </head>
   <body>
     <div class="site">
@@ -289,13 +345,25 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
     animation: 240ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in;
   }
 
-  /* The page leaves going up a little and arrives from below. */
-  ::view-transition-old(root) {
+  /* The page itself, and named elements with no counterpart on the other page
+     (a case study's hero when the logo leads home, say), leave going up and
+     arrive from below. */
+  ::view-transition-old(root),
+  ::view-transition-old(*):only-child {
     animation-name: page-out;
   }
 
-  ::view-transition-new(root) {
+  ::view-transition-new(root),
+  ::view-transition-new(*):only-child {
     animation-name: page-in;
+  }
+
+  /* Elements named on both pages (a row and the page it opens, "Projects" and
+     its page; see src/utils/transitions.ts) move and resize from one place to
+     the other. */
+  ::view-transition-group(*) {
+    animation-duration: 420ms;
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
   }
 
   /* The header (named in Header.astro) doesn't move or fade: the new one shows

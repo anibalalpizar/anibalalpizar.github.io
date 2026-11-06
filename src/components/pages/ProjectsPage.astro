@@ -7,6 +7,7 @@ import { categories, FULL_NAME, GITHUB_URL, kinds, projects } from "../../data/s
 import { L, localePath, locales, ui, type Lang } from "../../i18n/ui"
 import { downloadsOf, getActivity } from "../../utils/activity"
 import { projectsData } from "../../utils/structuredData"
+import { PROJECTS_TITLE, transitionAttrs } from "../../utils/transitions"
 
 interface Props {
   lang: Lang
@@ -65,7 +66,7 @@ const strings = {
         meta={`${projects.length} ${t.projectsCount}`}
       />
       <div class="hero-row">
-        <h1>{t.navProjects}</h1>
+        <h1 {...transitionAttrs(PROJECTS_TITLE)}>{t.navProjects}</h1>
         <a href={GITHUB_URL} target="_blank" rel="noreferrer" class="github">{t.moreGithub}</a>
       </div>
     </section>

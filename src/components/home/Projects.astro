@@ -4,6 +4,7 @@ import SectionHeader from "./SectionHeader.astro"
 import { featuredProjects, GITHUB_URL, kinds, projects, sectionIndex } from "../../data/site"
 import { L, localePath, locales, ui, type Lang } from "../../i18n/ui"
 import { downloadsOf, getActivity } from "../../utils/activity"
+import { PROJECTS_TITLE } from "../../utils/transitions"
 
 interface Props {
   lang: Lang
@@ -17,7 +18,14 @@ const number = new Intl.NumberFormat(locales[lang])
 
 <section id="projects" class="projects">
   <Marks />
-  <SectionHeader index={sectionIndex("projects")} title={t.navProjects} meta={t.moreGithub} metaHref={GITHUB_URL} />
+  <SectionHeader
+    index={sectionIndex("projects")}
+    title={t.navProjects}
+    meta={t.moreGithub}
+    metaHref={GITHUB_URL}
+    transition={PROJECTS_TITLE}
+    transitionFor={localePath(lang, "/projects")}
+  />
   <div class="grid">
     {
       featuredProjects.map((project, i) => {

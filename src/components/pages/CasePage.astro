@@ -8,6 +8,7 @@ import { L, localePath, ui, type Lang } from "../../i18n/ui"
 import { formatDate, timeAgo } from "../../utils/dates"
 import { caseData } from "../../utils/structuredData"
 import { summary } from "../../utils/summary"
+import { caseTransition } from "../../utils/transitions"
 
 interface Props {
   lang: Lang
@@ -28,7 +29,13 @@ if (!job) throw new Error(`${entry.id}: no Experience row with id "${exp}" and a
 
 const neighbor = (offset: number) => {
   const other = studies[index + offset]
-  return other && { name: L(other.company, lang), href: localePath(lang, other.casePath!) }
+  return (
+    other && {
+      name: L(other.company, lang),
+      href: localePath(lang, other.casePath!),
+      transition: caseTransition(other.casePath!),
+    }
+  )
 }
 
 const cells = [
@@ -59,6 +66,7 @@ const ogImage = { path: `/og/${lang}${path}.png`, alt: headline }
     pagerLabel={t.caseStudy}
     prev={neighbor(-1)}
     next={neighbor(1)}
+    transition={caseTransition(path)}
   >
     <Fragment slot="title">
       {title.before}<a href={titleHref} target="_blank" rel="noreferrer">{title.link}</a>{title.after}
