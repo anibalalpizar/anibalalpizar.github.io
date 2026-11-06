@@ -105,7 +105,8 @@ type Project = {
   description: Localized
   github: string
   demo: string
-  downloads?: string
+  /** npm package name: its download count is fetched at build time (src/utils/activity.ts). */
+  npm?: string
 }
 
 export const projects: Project[] = [
@@ -123,7 +124,7 @@ export const projects: Project[] = [
     },
     github: "https://github.com/anibalalpizar/env-protector",
     demo: "https://www.npmjs.com/package/env-protector",
-    downloads: "250+",
+    npm: "env-protector",
   },
   {
     id: "api-geo-cr",
@@ -180,7 +181,7 @@ export const projects: Project[] = [
     },
     github: "https://github.com/anibalalpizar/api-stress",
     demo: "https://www.npmjs.com/package/api-stress",
-    downloads: "70+",
+    npm: "api-stress",
   },
   {
     id: "audit-log-middleware",
@@ -194,7 +195,7 @@ export const projects: Project[] = [
     },
     github: "https://github.com/anibalalpizar/audit-log-middleware",
     demo: "https://www.npmjs.com/package/audit-log-middleware",
-    downloads: "70+",
+    npm: "audit-log-middleware",
   },
   {
     id: "secure-password-checker",
@@ -208,7 +209,7 @@ export const projects: Project[] = [
     },
     github: "https://github.com/anibalalpizar/secure-password-checker",
     demo: "https://www.npmjs.com/package/secure-password-checker",
-    downloads: "65+",
+    npm: "secure-password-checker",
   },
   {
     id: "terminal-portfolio-json",

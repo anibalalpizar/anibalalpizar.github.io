@@ -2,7 +2,8 @@
 import Marks from "../Marks.astro"
 import SectionHeader from "./SectionHeader.astro"
 import { featuredProjects, GITHUB_URL, kinds, projects } from "../../data/site"
-import { L, localePath, ui, type Lang } from "../../i18n/ui"
+import { L, localePath, locales, ui, type Lang } from "../../i18n/ui"
+import { downloadsOf, getActivity } from "../../utils/activity"
 
 interface Props {
   lang: Lang
@@ -10,6 +11,8 @@ interface Props {
 
 const { lang } = Astro.props
 const t = ui[lang]
+const activity = await getActivity()
+const number = new Intl.NumberFormat(locales[lang])
 ---
 
 <section id="projects" class="projects">
@@ -17,28 +20,31 @@ const t = ui[lang]
   <SectionHeader index="02" title={t.navProjects} meta={t.moreGithub} metaHref={GITHUB_URL} />
   <div class="grid">
     {
-      featuredProjects.map((project, i) => (
-        <a id={project.id} href={project.github} target="_blank" rel="noreferrer" class="card">
-          <div class="top">
-            <span>
-              {String(i + 1).padStart(2, "0")} — {L(kinds[project.kind], lang)}
-            </span>
-            <span aria-hidden="true">↗</span>
-          </div>
-          <div class="body">
-            <h3>{project.name}</h3>
-            <p class="description">{L(project.description, lang)}</p>
-            <div class="footer">
-              <span>{(project.homeStack ?? project.stack).join(" · ")}</span>
-              {project.downloads && (
-                <span>
-                  ↓ {project.downloads} {t.downloads}
-                </span>
-              )}
+      featuredProjects.map((project, i) => {
+        const downloads = downloadsOf(activity, project.npm)
+        return (
+          <a id={project.id} href={project.github} target="_blank" rel="noreferrer" class="card">
+            <div class="top">
+              <span>
+                {String(i + 1).padStart(2, "0")} — {L(kinds[project.kind], lang)}
+              </span>
+              <span aria-hidden="true">↗</span>
             </div>
-          </div>
-        </a>
-      ))
+            <div class="body">
+              <h3>{project.name}</h3>
+              <p class="description">{L(project.description, lang)}</p>
+              <div class="footer">
+                <span>{(project.homeStack ?? project.stack).join(" · ")}</span>
+                {downloads !== undefined && (
+                  <span>
+                    ↓ {number.format(downloads)} {t.downloads}
+                  </span>
+                )}
+              </div>
+            </div>
+          </a>
+        )
+      })
     }
   </div>
   <a href={localePath(lang, "/projects")} class="all">

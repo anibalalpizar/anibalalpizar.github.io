@@ -4,7 +4,8 @@ import PageBar from "../internal/PageBar.astro"
 import PageFooter from "../internal/PageFooter.astro"
 import Layout from "../../layouts/Layout.astro"
 import { categories, FULL_NAME, GITHUB_URL, kinds, projects } from "../../data/site"
-import { L, localePath, ui, type Lang } from "../../i18n/ui"
+import { L, localePath, locales, ui, type Lang } from "../../i18n/ui"
+import { downloadsOf, getActivity } from "../../utils/activity"
 import { projectsData } from "../../utils/structuredData"
 
 interface Props {
@@ -14,6 +15,8 @@ interface Props {
 const { lang } = Astro.props
 const t = ui[lang]
 const two = (n: number) => String(n).padStart(2, "0")
+const activity = await getActivity()
+const number = new Intl.NumberFormat(locales[lang])
 
 const tabs = [
   { key: "all", label: t.all, count: projects.length },
@@ -27,8 +30,10 @@ const tabs = [
 const rows = projects.map((project, i) => {
   const kind = L(kinds[project.kind], lang)
   const description = L(project.description, lang)
+  const downloads = downloadsOf(activity, project.npm)
   return {
     ...project,
+    downloads: downloads === undefined ? undefined : number.format(downloads),
     index: two(i + 1),
     kind,
     description,
