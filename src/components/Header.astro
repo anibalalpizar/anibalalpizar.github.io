@@ -102,6 +102,8 @@ const blogCurrent = page === "blog" || page === "post"
 
 <style>
   .header {
+    /* Its own layer in page transitions, so it stays put while the page changes. */
+    view-transition-name: site-header;
     position: sticky;
     top: 0;
     z-index: 20;

@@ -51,6 +51,17 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Page transitions (styles at the end of this file). The opt-in is written
+         here rather than in the stylesheet: Chrome checks it as soon as the page
+         starts, and a stylesheet still loading at that moment cancels the
+         transition. Off for people who ask their system for less motion. -->
+    <style is:inline>
+      @media (prefers-reduced-motion: no-preference) {
+        @view-transition {
+          navigation: auto;
+        }
+      }
+    </style>
     {
       page === "not-found" ? (
         <meta name="robots" content="noindex" />
@@ -116,6 +127,15 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
         } else if (lang === "en" && prefersSpanish) {
           location.replace(spanishHref + location.search + location.hash)
         }
+        // Switching language returns to the same scroll position (restoreScroll in
+        // src/scripts/lang.ts), which can happen after the first frame: no page
+        // transition there, or the new page could show at the top and then jump.
+        // Read now: restoreScroll clears the key before "pagereveal" may fire.
+        // Key must match SCROLL_KEY in src/scripts/lang.ts.
+        var switchingLanguage = sessionStorage.getItem("restore-scroll") != null
+        addEventListener("pagereveal", function (event) {
+          if (switchingLanguage && event.viewTransition) event.viewTransition.skipTransition()
+        })
       } catch {}
     </script>
   </head>
@@ -253,6 +273,65 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
     clip-path: inset(50%);
     white-space: nowrap;
     border: 0;
+  }
+
+  /* Page transitions, turned on in <head>. Browsers with cross-document view
+     transitions (Chrome, Edge, Safari 18.2+) animate from one page to the next;
+     the others just navigate.
+
+     What leaves fades out fast and what arrives fades in right after, so the
+     two pages barely overlap. */
+  ::view-transition-old(*) {
+    animation: 120ms cubic-bezier(0.4, 0, 1, 1) both fade-out;
+  }
+
+  ::view-transition-new(*) {
+    animation: 240ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in;
+  }
+
+  /* The page leaves going up a little and arrives from below. */
+  ::view-transition-old(root) {
+    animation-name: page-out;
+  }
+
+  ::view-transition-new(root) {
+    animation-name: page-in;
+  }
+
+  /* The header (named in Header.astro) doesn't move or fade: the new one shows
+     straight away, with the current page's link already highlighted. */
+  ::view-transition-old(site-header) {
+    display: none;
+  }
+
+  ::view-transition-new(site-header) {
+    animation: none;
+  }
+
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes page-out {
+    to {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
   }
 
   /* Anchor targets land below the 56px sticky header. */
