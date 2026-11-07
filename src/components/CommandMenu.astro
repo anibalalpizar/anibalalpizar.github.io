@@ -93,6 +93,13 @@ const items = [
     language: otherLang,
     keywords: "language idioma english inglés spanish español",
   },
+  {
+    group: g.prefs,
+    label: t.terminal.open,
+    hint: "~",
+    action: "terminal",
+    keywords: "terminal console consola command line comandos shell",
+  },
 ]
 ---
 
@@ -134,7 +141,7 @@ const items = [
     /** Theme item: label shown while the light theme is on. */
     altLabel?: string
     hint: string
-    action: "jump" | "go" | "open" | "mail" | "theme" | "language"
+    action: "jump" | "go" | "open" | "mail" | "theme" | "language" | "terminal"
     target?: string
     language?: Lang
     /** Extra words the search matches, e.g. "idioma" for the language item. */
@@ -287,6 +294,10 @@ const items = [
         break
       case "language":
         switchLanguage(item.language!, item.target!)
+        break
+      case "terminal":
+        // Terminal.astro listens for this.
+        document.dispatchEvent(new Event("open-terminal"))
         break
     }
   }

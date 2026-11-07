@@ -1,0 +1,662 @@
+---
+// A terminal over the site: type `help`, `projects`, `open env-protector`…
+// Opens with ` or ~, or from the ⌘K menu. What it prints comes from the same
+// data as the pages (src/utils/terminal.ts), fetched the first time it opens.
+import { localePath, ui, type Lang } from "../i18n/ui"
+
+interface Props {
+  lang: Lang
+  /** Current page path without the language prefix. */
+  path: string
+}
+
+const { lang, path } = Astro.props
+const t = ui[lang]
+const otherLang: Lang = lang === "en" ? "es" : "en"
+
+// Only what depends on this page; the rest is in /terminal/<lang>.json.
+const page = {
+  // Shown in the prompt: ~ for the home page, ~/blog for the blog…
+  cwd: `~${path === "/" ? "" : path.replace(/\/$/, "")}`,
+  otherLang: { lang: otherLang, href: localePath(otherLang, path) },
+  loadError: t.terminal.loadError,
+}
+---
+
+<div
+  class="overlay"
+  hidden
+  data-terminal
+  data-terminal-page={JSON.stringify(page)}
+  data-terminal-src={`/terminal/${lang}.json`}
+>
+  <div class="panel" role="dialog" aria-modal="true" aria-label={t.terminal.title}>
+    <div class="bar">
+      <span class="dots" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span class="title">{t.terminal.title}</span>
+      <button type="button" class="close" data-close-terminal>{t.close}</button>
+    </div>
+    <div class="screen" data-screen>
+      <div class="output" role="log" aria-live="polite" data-output></div>
+      <label class="line">
+        <span class="prompt" data-prompt></span>
+        <input
+          type="text"
+          aria-label={t.terminal.input}
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          enterkeyhint="send"
+          data-terminal-input
+        />
+      </label>
+    </div>
+    <div class="quick" role="group" aria-label={t.terminal.title}>
+      {
+        ["help", "whoami", "projects", "blog", "contact", "exit"].map((command) => (
+          <button type="button" data-command={command}>
+            {command}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<script>
+  import { switchLanguage } from "../scripts/lang"
+  import { scrollToId } from "../scripts/scroll"
+  import { getTheme, setTheme } from "../scripts/theme"
+
+  type Link = { text: string; href: string; external?: boolean }
+  /** A line of output: plain text, or parts where only the links are links. */
+  type Line = string | (string | Link)[]
+
+  const overlay = document.querySelector<HTMLElement>("[data-terminal]")!
+  const screen = overlay.querySelector<HTMLElement>("[data-screen]")!
+  const output = overlay.querySelector<HTMLElement>("[data-output]")!
+  const input = overlay.querySelector<HTMLInputElement>("[data-terminal-input]")!
+  const promptEl = overlay.querySelector<HTMLElement>("[data-prompt]")!
+  const page = JSON.parse(overlay.dataset.terminalPage!)
+  // Filled by load() the first time the terminal opens (see src/utils/terminal.ts).
+  let data: any
+  let s: any
+  const prompt = `anibal@site:${page.cwd}$`
+  promptEl.textContent = prompt
+
+  const HISTORY_KEY = "terminal-history"
+  let history: string[] = []
+  try {
+    history = JSON.parse(sessionStorage.getItem(HISTORY_KEY) ?? "[]")
+  } catch {}
+  let historyIndex = history.length
+  let isOpen = false
+  let started = false
+  let returnFocus: HTMLElement | null = null
+
+  // ── Output ────────────────────────────────────────────────
+
+  function print(...lines: Line[]) {
+    for (const line of lines) {
+      const row = document.createElement("div")
+      row.className = "row"
+      if (typeof line === "string") {
+        row.textContent = line || " "
+      } else {
+        for (const part of line) {
+          if (typeof part === "string") {
+            row.append(part)
+            continue
+          }
+          const link = document.createElement("a")
+          link.href = part.href
+          link.textContent = part.text
+          if (part.external) {
+            link.target = "_blank"
+            link.rel = "noreferrer"
+          }
+          row.append(link)
+        }
+      }
+      output.append(row)
+    }
+    screen.scrollTop = screen.scrollHeight
+  }
+
+  function echo(command: string) {
+    const row = document.createElement("div")
+    row.className = "row echo"
+    const p = document.createElement("span")
+    p.className = "prompt"
+    p.textContent = prompt
+    row.append(p, ` ${command}`)
+    output.append(row)
+  }
+
+  /** "name" padded to a column, so lists line up in the mono font. */
+  const pad = (text: string, width: number) => text.padEnd(width)
+  /** Phones: no room for columns, so each item takes two lines instead. */
+  const narrow = () => screen.clientWidth < 560
+
+  /** A name and its details: in columns, or the details on the next line. */
+  function entry(name: string | Link, details: string, width: number) {
+    const label = typeof name === "string" ? name : name.text
+    if (narrow()) print(["  ", name], `    ${details}`)
+    else print(["  ", name, " ".repeat(Math.max(1, width - label.length + 1)), details])
+  }
+
+  // ── Things that can be opened or visited ──────────────────
+
+  const normalize = (text: string) =>
+    text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "")
+
+  type Target = { names: string[]; label: string; href: string; external?: boolean }
+
+  let targets: Target[] = []
+  let loading: Promise<void> | undefined
+
+  /** Fetches /terminal/<lang>.json once; later calls reuse it. */
+  function load() {
+    return (loading ??= fetch(overlay.dataset.terminalSrc!)
+      .then((response) => {
+        if (!response.ok) throw new Error(String(response.status))
+        return response.json()
+      })
+      .then((json) => {
+        data = json
+        s = json.strings
+        targets = makeTargets()
+      })
+      .catch((error) => {
+        loading = undefined
+        throw error
+      }))
+  }
+
+  const makeTargets = (): Target[] => [
+    { names: ["github"], label: "GitHub", href: data.links.github, external: true },
+    { names: ["linkedin"], label: "LinkedIn", href: data.links.linkedin, external: true },
+    { names: ["email", "mail", "correo"], label: data.links.email, href: `mailto:${data.links.email}` },
+    { names: ["cv", "resume"], label: "CV", href: data.links.cv, external: true },
+    { names: ["home", "inicio"], label: "~", href: data.pages.home },
+    { names: ["blog"], label: "blog", href: data.pages.blog },
+    { names: ["projects", "proyectos"], label: "projects", href: data.pages.projects },
+    ...data.experience
+      .filter((job: { href?: string }) => job.href)
+      .map((job: { company: string; href: string }) => ({ names: [job.company], label: job.company, href: job.href })),
+    ...data.projects.map((p: { id: string; name: string; github: string }) => ({
+      names: [p.id, p.name],
+      label: p.name,
+      href: p.github,
+      external: true,
+    })),
+    ...data.posts.map((p: { slug: string; title: string; href: string }) => ({
+      names: [p.slug, p.title],
+      label: p.title,
+      href: p.href,
+    })),
+  ]
+
+  function find(query: string): Target[] {
+    const q = normalize(query)
+    if (!q) return []
+    const exact = targets.filter((target) => target.names.some((name) => normalize(name) === q))
+    if (exact.length) return exact
+    return targets.filter((target) => target.names.some((name) => normalize(name).includes(q)))
+  }
+
+  function go(target: Target) {
+    print(`${s.opening} ${target.label}…`)
+    if (target.external) {
+      window.open(target.href, "_blank", "noopener")
+    } else {
+      close()
+      location.href = target.href
+    }
+  }
+
+  // ── Commands ──────────────────────────────────────────────
+
+  const sections = ["experience", "projects", "activity", "stack", "contact"]
+
+  const commands: Record<string, (args: string[]) => void> = {
+    help() {
+      const usage: Record<string, string> = {
+        projects: "projects [word]",
+        open: "open <name>",
+        cd: "cd <section>",
+        theme: "theme [light|dark]",
+        lang: "lang [en|es]",
+      }
+      for (const [name, about] of Object.entries(s.commands as Record<string, string>)) {
+        entry(usage[name] ?? name, about, 20)
+      }
+    },
+
+    whoami() {
+      print(data.profile.name, data.profile.role, data.profile.location)
+    },
+
+    ls() {
+      print(
+        "experience/  projects/  blog/  stack  contact  cv.pdf",
+        "",
+        `${s.usage}: cd <section> · open <name>`
+      )
+    },
+
+    experience() {
+      for (const job of data.experience) {
+        const company = job.href ? { text: job.company, href: job.href } : job.company
+        if (narrow()) print(["  ", company], `    ${job.years} · ${job.role}`)
+        else print([`  ${pad(job.years, 10)} `, company, " ".repeat(31 - job.company.length), job.role])
+      }
+    },
+
+    projects(args) {
+      const word = normalize(args.join(""))
+      const list = data.projects.filter(
+        (p: { name: string; kind: string; description: string; stack: string }) =>
+          !word || normalize(`${p.name}${p.kind}${p.description}${p.stack}`).includes(word)
+      )
+      if (!list.length) return print(`${s.noMatch} "${args.join(" ")}"`)
+      for (const p of list) {
+        const downloads = p.downloads == null ? "" : ` · ↓ ${p.downloads} ${s.downloads}`
+        entry({ text: p.name, href: p.github, external: true }, `${p.kind}${downloads}`, 26)
+        print(`    ${p.description}`)
+      }
+    },
+
+    blog() {
+      for (const post of data.posts) print([`  ${post.date}  `, { text: post.title, href: post.href }])
+    },
+
+    stack() {
+      for (const group of data.stack) entry(group.label, group.items, 16)
+    },
+
+    contact() {
+      print(
+        ["  email     ", { text: data.links.email, href: `mailto:${data.links.email}` }],
+        ["  github    ", { text: data.links.github.replace("https://", ""), href: data.links.github, external: true }],
+        ["  linkedin  ", { text: data.links.linkedin.replace("https://www.", ""), href: data.links.linkedin, external: true }]
+      )
+    },
+
+    open(args) {
+      if (!args.length) return print(`${s.usage}: open <name>   (github, cv, blog, env-protector…)`)
+      const found = find(args.join(" "))
+      if (found.length === 1) return go(found[0])
+      if (!found.length) return print(`${s.noMatch} "${args.join(" ")}"`)
+      print(s.several, ...found.map((target) => `  ${target.label}`))
+    },
+
+    cd(args) {
+      const to = normalize(args.join(""))
+      if (!to || to === "home" || to === "inicio" || args[0] === "~" || args[0] === "/") return go(targets[4])
+      if (to === "blog") return go(targets[5])
+      if (to === "projects" || to === "proyectos") return go(targets[6])
+      const section = sections.find((id) => id.startsWith(to))
+      if (!section) return print(`cd: ${args.join(" ")}: ${s.noMatch.toLowerCase()}`, `${s.usage}: cd ${sections.join(" | ")} | blog | ~`)
+      close()
+      // On the home page it scrolls; elsewhere it goes there.
+      if (!scrollToId(section)) location.href = `${data.home}#${section}`
+    },
+
+    cv() {
+      go(targets[3])
+    },
+
+    theme(args) {
+      const want = args[0] === "light" || args[0] === "dark" ? args[0] : getTheme() === "dark" ? "light" : "dark"
+      setTheme(want)
+      print(`${s.themeNow}: ${want}`)
+    },
+
+    lang(args) {
+      if (args[0] && args[0] !== page.otherLang.lang) return print(`${s.usage}: lang ${page.otherLang.lang}`)
+      close()
+      switchLanguage(page.otherLang.lang, page.otherLang.href)
+    },
+
+    clear() {
+      output.replaceChildren()
+    },
+
+    exit() {
+      close()
+    },
+
+    sudo() {
+      print(s.sudo)
+    },
+
+    date() {
+      print(new Date().toString())
+    },
+
+    echo(args) {
+      print(args.join(" "))
+    },
+
+    history() {
+      history.forEach((line, i) => print(`  ${String(i + 1).padStart(3)}  ${line}`))
+    },
+  }
+
+  // `cat experience` works too.
+  commands.cat = (args) => (commands[args[0]] ? commands[args[0]]([]) : print(`cat: ${args.join(" ")}: ${s.noMatch.toLowerCase()}`))
+
+  async function runLine(line: string) {
+    const text = line.trim()
+    echo(text)
+    if (!text) return
+    try {
+      await load()
+    } catch {
+      return print(page.loadError)
+    }
+    history = [...history.filter((h) => h !== text), text].slice(-50)
+    historyIndex = history.length
+    try {
+      sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history))
+    } catch {}
+    const [name, ...args] = text.split(/\s+/)
+    const command = commands[name.toLowerCase()]
+    if (command) command(args)
+    else print(`${name}: ${s.notFound}. ${s.tryHelp}`)
+  }
+
+  // Tab: completes the command, or the name after open / cd / cat.
+  function complete() {
+    const value = input.value
+    const parts = value.split(/\s+/)
+    let options: string[]
+    if (parts.length === 1) {
+      options = Object.keys(commands)
+    } else if (parts[0] === "open") {
+      options = targets.map((target) => target.names[0])
+    } else if (parts[0] === "cd") {
+      options = [...sections, "blog", "~"]
+    } else if (parts[0] === "cat") {
+      options = ["experience", "projects", "blog", "stack", "contact"]
+    } else return
+    const last = parts.at(-1)!.toLowerCase()
+    const matches = options.filter((option) => option.toLowerCase().startsWith(last))
+    if (matches.length === 1) {
+      parts[parts.length - 1] = matches[0]
+      input.value = `${parts.join(" ")}${parts.length === 1 ? " " : ""}`
+    } else if (matches.length > 1) {
+      echo(value)
+      print(matches.join("  "))
+    }
+  }
+
+  // ── Open / close ──────────────────────────────────────────
+
+  async function open() {
+    if (isOpen) return
+    isOpen = true
+    returnFocus = document.activeElement as HTMLElement | null
+    overlay.hidden = false
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    document.body.style.paddingRight = `${scrollbarWidth}px`
+    document.body.style.overflow = "hidden"
+    // On touch screens the quick buttons come first; the keyboard opens on tap.
+    if (matchMedia("(hover: hover)").matches) input.focus()
+    if (started) return
+    try {
+      await load()
+      started = true
+      print(s.welcome, "")
+    } catch {
+      print(page.loadError)
+    }
+  }
+
+  function close() {
+    if (!isOpen) return
+    isOpen = false
+    overlay.hidden = true
+    document.body.style.overflow = ""
+    document.body.style.paddingRight = ""
+    returnFocus?.focus()
+  }
+
+  input.addEventListener("keydown", (event) => {
+    switch (event.key) {
+      case "Enter":
+        event.preventDefault()
+        runLine(input.value)
+        input.value = ""
+        break
+      case "Tab":
+        event.preventDefault()
+        complete()
+        break
+      case "ArrowUp":
+        event.preventDefault()
+        if (historyIndex > 0) input.value = history[--historyIndex]
+        break
+      case "ArrowDown":
+        event.preventDefault()
+        historyIndex = Math.min(history.length, historyIndex + 1)
+        input.value = history[historyIndex] ?? ""
+        break
+      case "l":
+        if (event.ctrlKey) {
+          event.preventDefault()
+          commands.clear([])
+        }
+        break
+    }
+  })
+
+  window.addEventListener("keydown", (event) => {
+    if (isOpen) {
+      if (event.key === "Escape") {
+        event.preventDefault()
+        close()
+      }
+      return
+    }
+    // ` or ~ opens it, unless the reader is typing somewhere or the ⌘K menu is open.
+    if (event.key !== "`" && event.key !== "~") return
+    if (event.metaKey || event.ctrlKey || event.altKey) return
+    const target = event.target as HTMLElement
+    if (target.closest("input, textarea, [contenteditable]")) return
+    if (document.querySelector<HTMLElement>("[data-command-menu]")?.hidden === false) return
+    event.preventDefault()
+    open()
+  })
+
+  overlay.querySelectorAll<HTMLButtonElement>("[data-command]").forEach((button) =>
+    button.addEventListener("click", () => {
+      runLine(button.dataset.command!)
+    })
+  )
+  overlay.querySelector("[data-close-terminal]")!.addEventListener("click", () => close())
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) close()
+  })
+  // Clicking the screen (not a link) puts the cursor back on the prompt.
+  screen.addEventListener("click", (event) => {
+    if (!(event.target as Element).closest("a") && !getSelection()?.toString()) input.focus()
+  })
+  document.addEventListener("open-terminal", open)
+</script>
+
+<style>
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 10vh 16px 16px;
+    background: var(--overlay);
+  }
+
+  .overlay[hidden] {
+    display: none;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 40px;
+    padding: 0 8px 0 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+  }
+
+  /* The three window dots, drawn as blueprint circles. */
+  .dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .dots span {
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--cross);
+    border-radius: 50%;
+  }
+
+  .title {
+    flex: 1;
+    color: var(--muted);
+  }
+
+  .close {
+    height: 28px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .close:hover,
+  .close:focus-visible {
+    color: var(--fg);
+    background: var(--hover);
+  }
+
+  .screen {
+    height: min(420px, 56vh);
+    overflow-y: auto;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    cursor: text;
+  }
+
+  .output :global(.row) {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .output :global(.echo) {
+    margin-top: 8px;
+  }
+
+  .output :global(a) {
+    text-decoration: underline;
+    text-decoration-color: var(--line-inv);
+    text-underline-offset: 3px;
+  }
+
+  .output :global(a:hover),
+  .output :global(a:focus-visible) {
+    text-decoration-color: currentColor;
+  }
+
+  .prompt,
+  .output :global(.prompt) {
+    color: var(--muted);
+  }
+
+  .line {
+    display: flex;
+    gap: 1ch;
+    margin-top: 8px;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    font-size: inherit;
+    line-height: inherit;
+    caret-color: var(--fg);
+  }
+
+  /* Quick commands, mainly for touch screens. */
+  .quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--line);
+  }
+
+  .quick button {
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: transparent;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+
+  .quick button:hover,
+  .quick button:focus-visible {
+    background: var(--hover);
+  }
+
+  @media (max-width: 639.98px) {
+    .overlay {
+      padding: 8px;
+    }
+
+    .screen {
+      height: calc(100dvh - 170px);
+    }
+
+    /* 16px keeps iOS from zooming into the field. */
+    input {
+      font-size: 16px;
+    }
+
+    .quick button {
+      height: 36px;
+    }
+  }
+</style>

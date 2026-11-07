@@ -6,6 +6,7 @@ import "@fontsource-variable/geist-mono"
 import geistMonoLatin from "@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2?url"
 import CommandMenu from "../components/CommandMenu.astro"
 import Header from "../components/Header.astro"
+import Terminal from "../components/Terminal.astro"
 import { SITE_URL, type Page } from "../data/site"
 import { localePath, ui, type Lang } from "../i18n/ui"
 
@@ -203,6 +204,7 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
       </div>
     </div>
     <CommandMenu lang={lang} path={path} />
+    <Terminal lang={lang} path={path} />
   </body>
 </html>
 
