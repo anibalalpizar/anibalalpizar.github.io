@@ -1,7 +1,7 @@
 ---
 import Marks from "../Marks.astro"
 import { CV_URL, EMAIL, GITHUB_URL, LINKEDIN_URL, sectionIndex } from "../../data/site"
-import { localePath, ui, type Lang } from "../../i18n/ui"
+import { L, localePath, ui, type Lang } from "../../i18n/ui"
 
 interface Props {
   lang: Lang
@@ -31,7 +31,7 @@ const year = new Date().getFullYear()
     <span>{t.linkedin}</span>
     <span class="glyph" aria-hidden="true">↗</span>
   </a>
-  <a href={CV_URL} download class="row">
+  <a href={L(CV_URL, lang)} download class="row">
     <span>{t.downloadCv}</span>
     <span class="glyph" aria-hidden="true">↓</span>
   </a>

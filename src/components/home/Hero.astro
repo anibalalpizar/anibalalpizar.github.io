@@ -1,6 +1,6 @@
 ---
 import { CV_URL } from "../../data/site"
-import { localePath, ui, type Lang } from "../../i18n/ui"
+import { L, localePath, ui, type Lang } from "../../i18n/ui"
 
 interface Props {
   lang: Lang
@@ -24,7 +24,7 @@ const name = "Aníbal"
   <div class="intro">
     <p class="bio">{t.bio}</p>
     <div class="actions">
-      <a href={CV_URL} download class="button primary">
+      <a href={L(CV_URL, lang)} download class="button primary">
         {t.cv}<span class="arrow">↓</span>
       </a>
       <a href={localePath(lang, "/#contact")} class="button secondary" data-scroll-to="contact">

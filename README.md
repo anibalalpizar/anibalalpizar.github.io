@@ -11,7 +11,7 @@ Built with [Astro](https://astro.build) and MDX.
 ```sh
 npm install
 npm run dev      # http://localhost:4321
-npm run build    # type-checks and then builds to dist/
+npm run build    # type-checks, builds to dist/ and makes the CV PDFs (needs Chrome)
 npm run check:links  # checks that no internal link in dist/ is broken
 ```
 
@@ -27,7 +27,8 @@ npm run check:links  # checks that no internal link in dist/ is broken
 | Blog posts | `src/content/posts/<en\|es>/<slug>.mdx` |
 | Blog post images | `src/assets/posts/<slug>/` |
 | Activity numbers (GitHub, npm) | `src/utils/activity.ts` |
-| CV | `public/Aníbal_CV.pdf` |
+| CV: what only the CV shows (name, phone, profile, education, job bullets) | `src/data/resume.ts` |
+| CV layout | `src/components/pages/CvPage.astro` |
 
 Values that change with the language are written as `{ en: "…", es: "…" }`; plain strings are shared by both.
 
@@ -103,6 +104,10 @@ Inside a `<Section>`, besides paragraphs and the components above, posts can use
 | `### Title` | A subheading inside the section. |
 | `- item` / `1. item` | A list with "+" marks / a numbered list ("01."). |
 | `> text` | A quote. |
+
+## The CV
+
+The CV isn't edited by hand. `npm run build` lays it out from the site's data (jobs, dates, stack and links from `site.ts`, the rest from `resume.ts`) and prints it with Chrome to `/Aníbal_CV.pdf` and `/es/Aníbal_CV.pdf` (`scripts/build-cv.mjs`). A new job or skill on the site is on the CV in the next build. Chrome is found in the usual places; set `CHROME_PATH` if it's somewhere else. `npm run dev` doesn't make the PDFs.
 
 ## Deploy
 

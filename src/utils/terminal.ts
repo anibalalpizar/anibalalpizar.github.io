@@ -36,7 +36,7 @@ export async function terminalData(lang: Lang) {
       role: current ? `${L(current.role, lang)} ${t.currentlyAt} ${L(current.company, lang)}` : "",
       location: `${basics.location.city}, ${basics.location.region}`,
     },
-    links: { github: GITHUB_URL, linkedin: LINKEDIN_URL, email: EMAIL, cv: CV_URL },
+    links: { github: GITHUB_URL, linkedin: LINKEDIN_URL, email: EMAIL, cv: L(CV_URL, lang) },
     experience: experience.map((job) => ({
       // "2024" for a job within one year, "2025–Now" otherwise.
       years: [...new Set([year(job.startDate), year(job.endDate)])].join("–"),

@@ -1,0 +1,363 @@
+---
+// The CV, laid out for a Letter page. scripts/build-cv.mjs prints it to PDF
+// after the build and then removes this page from dist/: only the PDF is
+// published. Jobs, dates, stack and links come from the site's own data.
+import "@fontsource-variable/geist-mono"
+import { basics } from "../../data/cv.json"
+import { LEGAL_NAME, PHONE, education, interests, jobDetails, languages, objective } from "../../data/resume"
+import { CV_URL, EMAIL, experience, GITHUB_URL, LINKEDIN_URL, SITE_URL, stack } from "../../data/site"
+import { L, localePath, locales, type Lang } from "../../i18n/ui"
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const text = {
+  en: {
+    profile: "Profile",
+    experience: "Experience",
+    skills: "Skills",
+    education: "Education",
+    languages: "Languages",
+    present: "Present",
+    caseStudy: "Case study",
+    updated: "Up to date with",
+  },
+  es: {
+    profile: "Perfil",
+    experience: "Experiencia",
+    skills: "Habilidades",
+    education: "Educación",
+    languages: "Idiomas",
+    present: "Actualidad",
+    caseStudy: "Caso de estudio",
+    updated: "Al día con",
+  },
+}[lang]
+
+const month = new Intl.DateTimeFormat(locales[lang], { month: "short", year: "numeric", timeZone: "UTC" })
+const when = (date: string | null) => (date ? month.format(new Date(`${date}T12:00:00Z`)) : text.present)
+const site = (path: string) => new URL(path, SITE_URL).href
+const bare = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")
+
+const current = experience.find((job) => job.endDate == null)
+const jobs = experience.map((job) => {
+  const details = jobDetails[job.id] ?? {}
+  return {
+    role: L(job.role, lang),
+    organization: L(details.organization ?? job.company, lang),
+    note: L(job.note, lang),
+    start: when(job.startDate),
+    end: when(job.endDate),
+    bullets: details.bullets ? L(details.bullets, lang) : [],
+    caseStudy: job.casePath && site(localePath(lang, job.casePath)),
+  }
+})
+const contacts = [
+  { text: PHONE, href: `tel:${PHONE.replace(/\s/g, "")}` },
+  { text: EMAIL, href: `mailto:${EMAIL}` },
+  { text: bare(SITE_URL), href: site(localePath(lang, "/")) },
+  { text: bare(GITHUB_URL), href: GITHUB_URL },
+  { text: bare(LINKEDIN_URL), href: LINKEDIN_URL },
+]
+const today = new Date().toISOString().slice(0, 10)
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <title>{LEGAL_NAME} — CV</title>
+    <meta name="robots" content="noindex" />
+    <!-- Where scripts/build-cv.mjs saves the PDF of this page. -->
+    <meta name="cv-pdf" content={L(CV_URL, lang)} />
+  </head>
+  <body>
+    <header class="head">
+      <h1>{LEGAL_NAME}</h1>
+      <p class="title">
+        {current && L(current.role, lang)} · {basics.location.city}, {basics.location.region}
+      </p>
+      <p class="contacts">
+        {
+          contacts.map((contact) => (
+            <a href={contact.href}>{contact.text}</a>
+          ))
+        }
+      </p>
+    </header>
+
+    <section>
+      <h2><span>01</span>{text.profile}</h2>
+      <p class="body">{L(objective, lang)}</p>
+    </section>
+
+    <section>
+      <h2><span>02</span>{text.experience}</h2>
+      {
+        jobs.map((job) => (
+          <article class="job">
+            <p class="dates">
+              <span>{job.start} –</span>
+              <span>{job.end}</span>
+            </p>
+            <div>
+              <h3>
+                {job.role} · {job.organization}
+                {job.note && <span class="note"> · {job.note}</span>}
+              </h3>
+              {job.bullets.length > 0 && (
+                <ul>
+                  {job.bullets.map((bullet) => (
+                    <li>{bullet}</li>
+                  ))}
+                </ul>
+              )}
+              {job.caseStudy && (
+                <a class="case" href={job.caseStudy}>
+                  {text.caseStudy}: {bare(job.caseStudy)}
+                </a>
+              )}
+            </div>
+          </article>
+        ))
+      }
+    </section>
+
+    <section class="keep">
+      <h2><span>03</span>{text.skills}</h2>
+      <dl class="skills">
+        {
+          stack.map((group) => (
+            <div>
+              <dt>{L(group.label, lang)}</dt>
+              <dd>{group.items.join(", ")}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <section class="keep">
+      <h2><span>04</span>{text.education}</h2>
+      {
+        education.map((school) => (
+          <article class="school">
+            <h3>{school.school}</h3>
+            {school.degrees.map((degree) => (
+              <p class="degree">
+                <span class="dates">{degree.years}</span>
+                <span>{L(degree.title, lang)}</span>
+              </p>
+            ))}
+          </article>
+        ))
+      }
+    </section>
+
+    <section class="keep">
+      <h2><span>05</span>{text.languages}</h2>
+      <p class="body">{L(languages, lang).join(" · ")}</p>
+      <p class="body">{L(interests, lang)}</p>
+    </section>
+
+    <footer class="foot">
+      {text.updated} <a href={site(localePath(lang, "/"))}>{bare(SITE_URL)}</a> · {today}
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  @page {
+    size: Letter;
+    margin: 14mm 15mm 12mm;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+    font-size: 9pt;
+    line-height: 1.5;
+    color: #0a0a0a;
+    background: #ffffff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  ul,
+  dl,
+  dd {
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Blueprint header: the name, a rule, then the contact line. */
+  .head {
+    padding-bottom: 10pt;
+    border-bottom: 1px solid #0a0a0a;
+  }
+
+  h1 {
+    font-size: 21pt;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+  }
+
+  .title {
+    margin-top: 4pt;
+    font-size: 10pt;
+  }
+
+  .contacts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2pt 14pt;
+    margin-top: 6pt;
+    color: #555555;
+  }
+
+  section {
+    padding: 11pt 0 2pt;
+    border-bottom: 1px solid #d6d6d6;
+  }
+
+  /* Short sections stay on one page, never with the heading alone at the bottom. */
+  .keep {
+    break-inside: avoid;
+  }
+
+  /* "02 EXPERIENCE": the numbered labels of the site's sections. */
+  h2 {
+    display: flex;
+    gap: 8pt;
+    margin-bottom: 7pt;
+    font-size: 8pt;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h2 span {
+    color: #777777;
+  }
+
+  .body {
+    margin-bottom: 7pt;
+    max-width: 92ch;
+  }
+
+  .job {
+    display: grid;
+    grid-template-columns: 26mm minmax(0, 1fr);
+    gap: 10pt;
+    padding-bottom: 9pt;
+    break-inside: avoid;
+  }
+
+  /* Start on one line, "– end" on the next. */
+  .job .dates span {
+    display: block;
+  }
+
+  .dates {
+    color: #555555;
+    font-size: 8pt;
+    font-variant-numeric: tabular-nums;
+  }
+
+  h3 {
+    font-size: 9.5pt;
+    font-weight: 600;
+  }
+
+  .note {
+    font-weight: 400;
+    color: #555555;
+  }
+
+  ul {
+    margin-top: 3pt;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* The site's "+" marks as bullets. */
+  li {
+    position: relative;
+    padding-left: 11pt;
+  }
+
+  li::before {
+    content: "+";
+    position: absolute;
+    left: 0;
+    color: #777777;
+  }
+
+  .case {
+    display: inline-block;
+    margin-top: 3pt;
+    font-size: 8pt;
+    color: #555555;
+    text-decoration: underline;
+    text-decoration-color: #bbbbbb;
+    text-underline-offset: 2pt;
+  }
+
+  .skills div {
+    display: grid;
+    grid-template-columns: 26mm minmax(0, 1fr);
+    gap: 10pt;
+    margin-bottom: 4pt;
+    break-inside: avoid;
+  }
+
+  dt {
+    color: #555555;
+    font-size: 8pt;
+  }
+
+  .school {
+    padding-bottom: 7pt;
+    break-inside: avoid;
+  }
+
+  .degree {
+    display: grid;
+    grid-template-columns: 26mm minmax(0, 1fr);
+    gap: 10pt;
+    margin-top: 2pt;
+  }
+
+  .school h3 {
+    margin-left: calc(26mm + 10pt);
+  }
+
+  .foot {
+    margin-top: 10pt;
+    font-size: 7.5pt;
+    color: #777777;
+  }
+
+  .foot a {
+    text-decoration: underline;
+    text-decoration-color: #bbbbbb;
+  }
+</style>

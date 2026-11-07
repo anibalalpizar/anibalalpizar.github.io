@@ -11,7 +11,8 @@ export const EMAIL = basics.email
 export const GITHUB_URL = profileUrl("GitHub") ?? "https://github.com/anibalalpizar"
 export const LINKEDIN_URL =
   profileUrl("LinkedIn") ?? "https://www.linkedin.com/in/anibalalpizar/"
-export const CV_URL = "/Aníbal_CV.pdf"
+/** Made at build time from the site's data (scripts/build-cv.mjs). */
+export const CV_URL: Localized = { en: "/Aníbal_CV.pdf", es: "/es/Aníbal_CV.pdf" }
 
 /**
  * Home sections, in page order. `key` picks the label from the UI strings.

@@ -41,8 +41,9 @@ export default defineConfig({
         // Same hreflang codes as the <link rel="alternate"> tags in Layout.astro.
         locales: { en: 'en', es: 'es' },
       },
-      // Error pages and the /about redirect aren't real pages to index.
-      filter: (page) => !/\/(404|about)\/?$/.test(new URL(page).pathname),
+      // Error pages, the /about redirect and the CV pages (printed to PDF and
+      // removed by scripts/build-cv.mjs) aren't real pages to index.
+      filter: (page) => !/\/(404|about|cv)\/?$/.test(new URL(page).pathname),
     }),
   ],
   // The About page was merged into the single-page home.
