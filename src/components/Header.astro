@@ -90,7 +90,7 @@ const blogCurrent = page === "blog" || page === "post"
   import { switchLanguage } from "../scripts/lang"
   import { toggleTheme } from "../scripts/theme"
 
-  document.querySelector("[data-theme-toggle]")?.addEventListener("click", toggleTheme)
+  document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => toggleTheme())
 
   document.querySelectorAll<HTMLButtonElement>("[data-language]").forEach((button) => {
     button.addEventListener("click", () => {

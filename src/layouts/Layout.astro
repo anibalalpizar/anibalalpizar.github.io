@@ -378,6 +378,19 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
     animation: none;
   }
 
+  /* Switching theme (src/scripts/theme.ts): the new page spreads in a circle
+     over the old one, which stays still underneath. The header is part of the
+     page here, so it changes with the rest. */
+  html.theme-transition::view-transition-old(root),
+  html.theme-transition::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  html.theme-transition .header {
+    view-transition-name: none;
+  }
+
   @keyframes fade-out {
     to {
       opacity: 0;

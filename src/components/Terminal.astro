@@ -66,7 +66,7 @@ const page = {
 <script>
   import { switchLanguage } from "../scripts/lang"
   import { scrollToId } from "../scripts/scroll"
-  import { getTheme, setTheme } from "../scripts/theme"
+  import { getTheme, switchTheme } from "../scripts/theme"
 
   type Link = { text: string; href: string; external?: boolean }
   /** A line of output: plain text, or parts where only the links are links. */
@@ -313,7 +313,7 @@ const page = {
 
     theme(args) {
       const want = args[0] === "light" || args[0] === "dark" ? args[0] : getTheme() === "dark" ? "light" : "dark"
-      setTheme(want)
+      switchTheme(want)
       print(`${s.themeNow}: ${want}`)
     },
 
