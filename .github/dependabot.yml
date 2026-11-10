@@ -13,6 +13,11 @@ updates:
     groups:
       dependencies:
         update-types: [minor, patch]
+    ignore:
+      # TypeScript 7 (the rewrite in Go) isn't supported by @astrojs/check yet:
+      # `npm ci` fails. Remove this once @astrojs/check accepts it.
+      - dependency-name: typescript
+        versions: [">=7"]
 
   # The actions used by the workflows in .github/workflows.
   - package-ecosystem: github-actions
