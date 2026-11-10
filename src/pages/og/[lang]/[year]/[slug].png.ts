@@ -21,5 +21,5 @@ export const GET: APIRoute = async ({ props }) => {
     kicker: `${ui[lang].caseStudy} · ${date.slice(0, 4)}`,
     title: `${title.before}${title.link}${title.after}`,
   })
-  return new Response(png, { headers: { "Content-Type": "image/png" } })
+  return new Response(new Uint8Array(png), { headers: { "Content-Type": "image/png" } })
 }

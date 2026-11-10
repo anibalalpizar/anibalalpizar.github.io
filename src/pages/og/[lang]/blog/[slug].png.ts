@@ -21,5 +21,5 @@ export const GET: APIRoute = async ({ props }) => {
     aside: `${post.minutes} ${t.minRead}`,
     title: post.data.title,
   })
-  return new Response(png, { headers: { "Content-Type": "image/png" } })
+  return new Response(new Uint8Array(png), { headers: { "Content-Type": "image/png" } })
 }
