@@ -1,0 +1,120 @@
+---
+title: "Cómo armé la sección Actividad en vivo"
+description: "Cómo mi sitio muestra números reales de GitHub y npm sin consultarles nada cuando lo visitas: datos al compilar y una reconstrucción cada noche."
+date: "2026-11-11"
+tags: ["Astro", "GitHub", "npm", "GitHub Actions"]
+---
+
+<Section title="Números que se quedaron viejos">
+
+Las tarjetas de mis proyectos decían "↓ 250+ descargas" para env-protector. Escribí ese número a mano cuando publiqué el paquete y después me olvidé de él. Cuando por fin revisé npm, el número real era 592. Los otros tres paquetes tenían el mismo problema: decían 65+ o 70+, y todos pasaban de 200.
+
+Ese es el problema de los números que escribes tú: son correctos el día que los escribes. Así que armé una sección Actividad para el inicio que saca sus números de la fuente: mis contribuciones en GitHub, mi último push y las descargas de mis paquetes de npm. Las tarjetas de proyectos usan los mismos datos.
+
+</Section>
+
+<Figure
+  src="posts/building-a-live-activity-section/activity.png"
+  caption="La sección Actividad: contribuciones, rachas, último push y descargas en npm"
+/>
+
+<Section title="De dónde salen los números">
+
+Son tres fuentes, y cada una me enseñó algo.
+
+### Las contribuciones de GitHub
+
+GitHub no tiene una API pública para el calendario de contribuciones. La página del perfil lo carga como un fragmento de HTML, así que eso es lo que lee el sitio: una celda por día con su nivel, y un texto con el número exacto.
+
+```ts title="src/utils/activity.ts"
+// Each day is a <td data-date data-level id>; its count is in <tool-tip for="that id">.
+for (const [, id, text] of html.matchAll(/<tool-tip\b[^>]*\sfor="([^"]+)"[^>]*>([^<]*)<\/tool-tip>/g)) {
+  const match = text.trim().match(/^(No|\d[\d,]*) contributions? on /)
+  if (!match) throw new Error(`unexpected day label "${text.trim()}"`)
+  counts.set(id, match[1] === "No" ? 0 : Number(match[1].replace(/,/g, "")))
+}
+```
+
+Leer un HTML que no está hecho para ti es frágil, así que el código no adivina: si GitHub cambia el formato, falla, y me entero enseguida en vez de publicar números equivocados.
+
+### El último push
+
+Este sí tiene API: los eventos públicos de mi cuenta. El primer `PushEvent` es el último push. En GitHub Actions la consulta lleva el token del workflow, que quita el límite de 60 consultas por hora de las llamadas anónimas.
+
+### Las descargas de npm
+
+La API de descargas de npm devuelve números por día, con un máximo de 18 meses por consulta. Con cuatro paquetes y dos años de historia, eran una docena de consultas por compilación. La solución fue una consulta "bulk": una sola llamada para todos los paquetes a la vez, de hasta 365 días.
+
+```ts title="src/utils/activity.ts"
+const body = await (
+  await request(`https://api.npmjs.org/downloads/range/${start}:${end}/${PACKAGES.join(",")}`)
+).json()
+```
+
+</Section>
+
+<Section title="Dibujada al compilar el sitio">
+
+Nada de esto pasa cuando visitas el sitio. Los números se piden una vez, mientras se compila, y quedan escritos en la página. Tu navegador nunca habla con GitHub ni con npm: no hay nada que esperar, nada que te rastree y nada que pueda fallar frente a ti.
+
+Los gráficos se dibujan igual, como HTML y SVG normales:
+
+- El calendario es una tabla de verdad, con una celda por día. Los lectores de pantalla la pueden leer, y con las flechas del teclado te mueves de un día a otro.
+- Las descargas por semana son una línea dentro de una caja de 100 × 100 que se estira para ocupar el espacio. Como los mismos números funcionan como porcentajes, las etiquetas, las líneas guía y el punto que sigue al cursor se alinean con la línea sin hacer cuentas en el navegador.
+- Todo es en blanco y negro, como el resto del sitio: más contribuciones es simplemente más brillo.
+
+</Section>
+
+<Section title="Una reconstrucción cada noche">
+
+Los números que se piden al compilar están tan frescos como la última compilación. Por eso el sitio se reconstruye solo cada noche, a las 3:00 de Costa Rica, con un workflow programado de GitHub Actions:
+
+```yaml title=".github/workflows/deploy.yml"
+on:
+  schedule:
+    - cron: "0 9 * * *"
+
+# …
+      - run: npm run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTIVITY_REQUIRED: ${{ github.event_name == 'schedule' }}
+```
+
+Esa última línea decide qué pasa si no se puede llegar a GitHub o a npm. Cuando publico un cambio, la fuente que falta se omite y el resto del sitio sale igual. En la reconstrucción nocturna, que solo existe para actualizar los números, se detiene: el sitio se queda con la versión de ayer en vez de reemplazarla por una más vacía.
+
+</Section>
+
+<Section title="Tres errores que no esperaba">
+
+### npm respondió "Too Many Requests"
+
+Después de algunas compilaciones seguidas, npm empezó a responder 429 y las descargas desaparecieron de la página. La consulta bulk bajó la docena de llamadas a dos, y ahora el código espera y reintenta cuando un servidor está ocupado.
+
+### Una racha de cero días
+
+La sección decía que mi racha actual era de 0 días. No era así: el calendario de GitHub termina en la fecha de hoy en UTC, que de noche en Costa Rica ya es mañana. Esos "días" vacíos cortaban la racha. Ahora los días desde hoy en adelante, en hora de Costa Rica, no cuentan en contra.
+
+```ts title="src/utils/activity.ts"
+const today = new Date().toLocaleDateString("en-CA", { timeZone: TIME_ZONE })
+let currentStreak = 0
+for (let i = days.length - 1; i >= 0; i--) {
+  if (days[i].count > 0) currentStreak++
+  else if (days[i].date < today) break
+}
+```
+
+### Un inicio cuatro veces más pesado
+
+La primera versión llevó el inicio de 26 KB a 110 KB, casi todo por las 370 celdas del calendario. Cada celda guardaba su fecha, su número y su nivel dos veces: una para el texto al pasar el mouse y otra para los lectores de pantalla. Usar la etiqueta de los lectores de pantalla también para el texto del mouse lo bajó a 85 KB, unos 11 KB comprimido.
+
+</Section>
+
+<Section title="Qué aprendí">
+
+1. Si un número puede cambiar, no lo escribas a mano: léelo de donde vive.
+2. Pide los datos al compilar cuando puedas. Los visitantes reciben una página rápida, y una caída se vuelve un aviso en un registro en vez de una sección rota.
+3. Cuando leas datos que no están hechos para ti, falla con ruido. Un error claro es mejor que números que están mal en silencio.
+4. Las zonas horarias te encuentran, incluso en una sección que solo cuenta días.
+
+</Section>
