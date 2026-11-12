@@ -7,9 +7,11 @@ import type { Localized } from "../i18n/ui"
 export const LEGAL_NAME = "Aníbal Alberto Alpízar Campos"
 export const PHONE = "+506 7169 9681"
 
+/** The "Profile" section: from the About text on LinkedIn (its project and
+ * technology paragraphs are already in Experience and Skills). */
 export const objective: Localized = {
-  en: "Software Engineer with development skills. Committed to effective communication and motivated to learn. I am looking for a position where I can apply and develop my skills in a dynamic professional environment.",
-  es: "Ingeniero de software con habilidades de desarrollo, comprometido con la comunicación efectiva y con ganas de aprender. Busco un puesto donde aplicar y desarrollar mis habilidades en un entorno profesional dinámico.",
+  en: "Software engineer based in Costa Rica, focused on TypeScript, React, Next.js, Node.js, and NestJS. I build web solutions around real operational processes, with an emphasis on maintainability, business rules, and software reliability. My professional focus is on making better technical decisions, building maintainable applications, and delivering reliable software throughout the development lifecycle.",
+  es: "Ingeniero de software en Costa Rica, enfocado en TypeScript, React, Next.js, Node.js y NestJS. Desarrollo soluciones web orientadas a procesos reales, con atención a la mantenibilidad, las reglas de negocio y la confiabilidad del software. Mi enfoque profesional está en tomar mejores decisiones técnicas, construir aplicaciones mantenibles y entregar software confiable durante todo el ciclo de desarrollo.",
 }
 
 /** Per Experience row (by its id in site.ts): a different name for the CV, and what was done. */
