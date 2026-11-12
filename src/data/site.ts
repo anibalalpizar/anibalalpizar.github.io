@@ -59,7 +59,7 @@ export const experience: Experience[] = [
     company: "Tech Solutions",
     role: { en: "Full Stack Developer", es: "Desarrollador full stack" },
     note: { en: "Internship", es: "Pasantía" },
-    startDate: "2024-04-01",
+    startDate: "2024-05-15",
     endDate: "2024-08-25",
     casePath: "/2024/internship-at-tech-solutions",
   },
