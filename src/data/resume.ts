@@ -95,6 +95,10 @@ export const education: { school: string; degrees: { title: Localized; years: st
   {
     school: "Universidad Técnica Nacional · Sede Central",
     degrees: [
+      {
+        title: { en: "Licentiate in Software Engineering (in progress)", es: "Licenciatura en Ingeniería del Software (en curso)" },
+        years: "2025–2027",
+      },
       { title: { en: "Bachelor of Software Engineering", es: "Bachillerato en Ingeniería del Software" }, years: "2023–2024" },
       { title: { en: "Diploma in Information Technology", es: "Diplomado en Tecnologías de la Información" }, years: "2021–2023" },
     ],
