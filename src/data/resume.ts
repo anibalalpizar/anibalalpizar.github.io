@@ -19,14 +19,14 @@ export const jobDetails: Record<string, { organization?: Localized; bullets?: Lo
     bullets: {
       en: [
         "Develop and maintain digital solutions for Costa Rican public institutions; currently on a project for the Ministry of Public Works and Transport (MOPT).",
-        "Built features for the RETC-REACAI system of the Ministry of Health.",
+        "Built features for the RETC-REACAH system of the Ministry of Health.",
         "Implemented an internal transportation and overtime management system for the Legislative Assembly of Costa Rica.",
         "Developed and maintain background services for PROCOMER.",
         "Work on frontend and backend features across systems and domains, within existing architectures and adapting solutions to each institution's requirements.",
       ],
       es: [
         "Desarrollo y mantengo soluciones digitales para instituciones públicas de Costa Rica; actualmente en un proyecto para el Ministerio de Obras Públicas y Transportes (MOPT).",
-        "Desarrollé funcionalidades del sistema RETC-REACAI del Ministerio de Salud.",
+        "Desarrollé funcionalidades del sistema RETC-REACAH del Ministerio de Salud.",
         "Implementé un sistema de gestión de transporte interno y horas extra para la Asamblea Legislativa de Costa Rica.",
         "Desarrollé y mantengo servicios en segundo plano para PROCOMER.",
         "Trabajo en frontend y backend en distintos sistemas y dominios, dentro de arquitecturas existentes y adaptando las soluciones a los requisitos de cada institución.",
