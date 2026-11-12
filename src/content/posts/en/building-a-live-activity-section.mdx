@@ -1,0 +1,120 @@
+---
+title: "Building a live Activity section"
+description: "How my site shows real GitHub and npm numbers without asking them anything when you visit: data fetched at build time and a rebuild every night."
+date: "2026-11-11"
+tags: ["Astro", "GitHub", "npm", "GitHub Actions"]
+---
+
+<Section title="Numbers that went stale">
+
+My project cards used to say "↓ 250+ downloads" for env-protector. I typed that number by hand when I published the package, and then forgot about it. When I finally checked npm, the real number was 592. The other three packages had the same problem: they said 65+ or 70+, and all had more than 200.
+
+That's the trouble with numbers you write yourself: they're right the day you write them. So I built an Activity section for the home page that gets its numbers from the source: my GitHub contributions, my latest push, and the downloads of my npm packages, with the project cards using the same data.
+
+</Section>
+
+<Figure
+  src="posts/building-a-live-activity-section/activity.png"
+  caption="The Activity section: contributions, streaks, latest push and npm downloads"
+/>
+
+<Section title="Where the numbers come from">
+
+There are three sources, and each one taught me something.
+
+### GitHub contributions
+
+GitHub has no public API for the contribution calendar. The profile page loads it as an HTML fragment, so that's what the site reads: one cell per day with its level, and a tooltip with the exact count.
+
+```ts title="src/utils/activity.ts"
+// Each day is a <td data-date data-level id>; its count is in <tool-tip for="that id">.
+for (const [, id, text] of html.matchAll(/<tool-tip\b[^>]*\sfor="([^"]+)"[^>]*>([^<]*)<\/tool-tip>/g)) {
+  const match = text.trim().match(/^(No|\d[\d,]*) contributions? on /)
+  if (!match) throw new Error(`unexpected day label "${text.trim()}"`)
+  counts.set(id, match[1] === "No" ? 0 : Number(match[1].replace(/,/g, "")))
+}
+```
+
+Reading HTML that isn't meant for you is fragile, so the code doesn't guess: if GitHub changes the format, it throws, and I find out right away instead of publishing wrong numbers.
+
+### The latest push
+
+This one does have an API: the public events of my account. The first `PushEvent` is the latest push. On GitHub Actions the request carries the workflow's token, which lifts the limit of 60 requests an hour for anonymous calls.
+
+### npm downloads
+
+npm's downloads API returns daily numbers, at most 18 months per request. With four packages and two years of history, that was a dozen requests per build. The fix was a "bulk" request: one call for every package at once, up to 365 days.
+
+```ts title="src/utils/activity.ts"
+const body = await (
+  await request(`https://api.npmjs.org/downloads/range/${start}:${end}/${PACKAGES.join(",")}`)
+).json()
+```
+
+</Section>
+
+<Section title="Drawn when the site is built">
+
+None of this happens when you visit. The numbers are fetched once, while the site is built, and written into the page. Your browser never talks to GitHub or npm: there's nothing to wait for, nothing to track you, and nothing that can fail in front of you.
+
+The charts are drawn the same way, as plain HTML and SVG:
+
+- The calendar is a real table, one cell per day. Screen readers can read it, and the arrow keys move from day to day.
+- The weekly downloads are a line in a 100 × 100 box, stretched to fit. Because the same numbers are percentages, the labels, the gridlines and the dot that follows your cursor line up with the line without any math in the browser.
+- Everything is black and white, like the rest of the site: more contributions is just brighter.
+
+</Section>
+
+<Section title="A rebuild every night">
+
+Numbers fetched at build time are only as fresh as the last build. So the site rebuilds itself every night at 3:00 in Costa Rica, with a scheduled GitHub Actions workflow:
+
+```yaml title=".github/workflows/deploy.yml"
+on:
+  schedule:
+    - cron: "0 9 * * *"
+
+# …
+      - run: npm run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTIVITY_REQUIRED: ${{ github.event_name == 'schedule' }}
+```
+
+That last line decides what happens when GitHub or npm can't be reached. When I publish a change, a missing source is left out and the rest of the site goes online. In the nightly rebuild, whose only job is to refresh the numbers, it stops instead: the site keeps yesterday's version rather than replacing it with an emptier one.
+
+</Section>
+
+<Section title="Three bugs I didn't expect">
+
+### npm said "Too Many Requests"
+
+After a few builds in a row, npm started answering 429 and the downloads disappeared from the page. The bulk request cut the dozen calls down to two, and the code now waits and retries when a server is busy.
+
+### A streak of zero days
+
+The section said my current streak was 0 days. It wasn't: GitHub's calendar ends on today's date in UTC, which at night in Costa Rica is already tomorrow. Those empty "days" broke the streak. Now days from today on, in Costa Rica's time, don't count against it.
+
+```ts title="src/utils/activity.ts"
+const today = new Date().toLocaleDateString("en-CA", { timeZone: TIME_ZONE })
+let currentStreak = 0
+for (let i = days.length - 1; i >= 0; i--) {
+  if (days[i].count > 0) currentStreak++
+  else if (days[i].date < today) break
+}
+```
+
+### A home page four times heavier
+
+The first version took the home page from 26 KB to 110 KB, almost all of it in the calendar's 370 cells. Each cell carried its date, count and level twice: once for the hover text and once for screen readers. Reusing the screen reader label for the hover text brought it down to 85 KB, about 11 KB once compressed.
+
+</Section>
+
+<Section title="What I learned">
+
+1. If a number can change, don't type it: read it from where it lives.
+2. Fetch at build time when you can. Visitors get a fast page, and an outage becomes a warning in a log instead of a broken section.
+3. When reading data that isn't meant for you, fail loudly. A clear error beats numbers that are quietly wrong.
+4. Time zones will find you, even in a section that only counts days.
+
+</Section>
