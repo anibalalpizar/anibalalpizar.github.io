@@ -113,7 +113,7 @@ The CV isn't edited by hand. `npm run build` lays it out from the site's data (j
 
 Every push to `master` builds the site and publishes it to GitHub Pages (`.github/workflows/deploy.yml`). The sitemap, the RSS feeds (`/rss.xml` and `/es/rss.xml`), the link preview images and the `/about` redirect are generated during the build.
 
-The home page's Activity section (GitHub contributions and latest push, npm downloads) and the download counts on the project cards are fetched during the build too, so the site also rebuilds every night at 03:00 Costa Rica time. If GitHub or npm can't be reached:
+The home page's Activity section (GitHub contributions and latest push, npm downloads) and the download counts on the project cards are fetched during the build too, so the site also rebuilds every night at 02:23 Costa Rica time. If GitHub or npm can't be reached:
 
 - On a push or a local build, that part is left out and the rest of the site is published.
 - On the nightly rebuild, the run stops and the site online keeps the previous day's numbers.
