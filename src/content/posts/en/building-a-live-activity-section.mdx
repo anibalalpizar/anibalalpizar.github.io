@@ -67,12 +67,12 @@ The charts are drawn the same way, as plain HTML and SVG:
 
 <Section title="A rebuild every night">
 
-Numbers fetched at build time are only as fresh as the last build. So the site rebuilds itself every night at 3:00 in Costa Rica, with a scheduled GitHub Actions workflow:
+Numbers fetched at build time are only as fresh as the last build. So the site rebuilds itself every night at 2:23 in Costa Rica, with a scheduled GitHub Actions workflow:
 
 ```yaml title=".github/workflows/deploy.yml"
 on:
   schedule:
-    - cron: "0 9 * * *"
+    - cron: "23 8 * * *"
 
 # …
       - run: npm run build
