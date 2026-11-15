@@ -67,7 +67,7 @@ Los gráficos se dibujan igual, como HTML y SVG normales:
 
 <Section title="Una reconstrucción cada noche">
 
-Los números que se piden al compilar están tan frescos como la última compilación. Por eso el sitio se reconstruye solo cada noche, a las 2:23 de Costa Rica, con un workflow programado de GitHub Actions:
+Los números que se piden al compilar están tan frescos como la última compilación. Por eso el sitio se reconstruye solo una vez al día, con un workflow programado de GitHub Actions para las 2:23 de Costa Rica. GitHub a veces lo corre unas horas después, pero corre todos los días:
 
 ```yaml title=".github/workflows/deploy.yml"
 on:
