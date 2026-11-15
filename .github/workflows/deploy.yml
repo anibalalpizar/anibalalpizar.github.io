@@ -3,8 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [master]
-  # Every night at 02:23 in Costa Rica (08:23 UTC), so the Activity section's
-  # GitHub and npm numbers stay fresh (src/utils/activity.ts).
+  # Every night at 02:23 in Costa Rica (08:23 UTC; GitHub often starts it hours
+  # later), so the Activity section's GitHub and npm numbers stay fresh (src/utils/activity.ts).
   # Off the hour: GitHub delays scheduled runs most at the top of the hour.
   schedule:
     - cron: "23 8 * * *"
