@@ -1,0 +1,122 @@
+---
+title: "Building env-protector"
+description: "My most downloaded npm package: why an app should check its environment variables when it starts, how env-protector does it, and what I'd change today."
+date: "2026-11-15"
+tags: ["TypeScript", "npm", "Node.js"]
+---
+
+<Section title="The problem with process.env">
+
+Every Node.js app reads its settings from environment variables: the port, the database address, the API keys. They arrive through `process.env`, and `process.env` has two surprises.
+
+The first is that every value is a string, or `undefined` when it's missing. A port of 8080 arrives as `"8080"`, and `"false"` is a string with text in it, so it counts as true:
+
+```ts title="server.ts"
+process.env.DEBUG = "false"
+
+if (process.env.DEBUG) {
+  // This runs: "false" is a non-empty string.
+}
+```
+
+The second is that nothing checks them. If `DATABASE_URL` is missing, the app starts as if everything were fine and only fails later, the first time some code needs the database. Maybe in the middle of a request, maybe on a server where nobody is looking at the logs.
+
+I wanted the opposite: check every variable once, when the app starts, and stop right there with a clear message if something is wrong. That's env-protector.
+
+</Section>
+
+<Section title="What it looks like">
+
+You describe each variable once, with its type and its rules, and ask for a check:
+
+```ts title="env.ts"
+import { EnvValidator } from "env-protector"
+
+const result = new EnvValidator({
+  PORT: { type: "number", required: true, min: 1024, max: 65535, message: "PORT must be between 1024 and 65535" },
+  NODE_ENV: { type: "enum", required: true, enum: ["development", "production", "test"], default: "development", message: "Unknown NODE_ENV" },
+  API_KEY: { type: "pattern", required: true, pattern: /^sk_test_[a-zA-Z0-9]+$/, message: "Invalid API key format" },
+}).validate()
+
+if (!result.isValid) {
+  result.errors.forEach((error) => console.error(`- ${error.message}`))
+  process.exit(1)
+}
+```
+
+Two decisions shaped the result:
+
+- **Every error at once.** The check doesn't stop at the first problem. If three variables are wrong, you see three messages and fix them in one go, instead of restarting the app three times to find them one by one.
+- **Values that are already converted.** `result.validatedEnv` holds the variables with their real types: `PORT` is the number 8080, `DEBUG` is `true` or `false`, and a list like `"a,b,c"` becomes an array.
+
+It supports eight types: string, number, boolean, url, email, array, enum and pattern. Each variable can also have a default value and a custom check of its own.
+
+</Section>
+
+<Section title="How it works inside">
+
+The whole package is a loop over the variables you describe. For each one:
+
+1. If it's required, missing, and has no default, that's an error.
+2. Otherwise, it checks the value against its type.
+3. If the value is valid, it converts it: text to a number, to `true`/`false`, or to an array.
+4. Last, it checks the range for numbers and runs the custom check, if there is one.
+
+The conversion is where the second surprise from `process.env` gets fixed:
+
+```ts title="src/validators.ts"
+case "boolean":
+  const normalizedValue = String(value).toLowerCase()
+  return ["true", "1"].includes(normalizedValue)
+```
+
+The code is about 540 lines of TypeScript with 12 tests in Vitest. `npm publish` runs the tests and the build first, so a version with failing tests can't reach npm.
+
+</Section>
+
+<Section title="Built in one day">
+
+The whole history is 31 commits, all on December 1, 2024: types first, then the validator, then the tests, then one class per type. That night, at 23:21 in Costa Rica, the first version was on npm.
+
+It changed names twice along the way. It started as `@anibalalpizar/env-validator`, became `env-checker`, and ended as `env-protector`: env-checker has been taken on npm since 2016, and so has env-validator.
+
+Two years later it has 594 downloads, the most of my four packages. Some perspective on that number: 150 came on the first day, when mirrors and security scanners download every new package automatically. Today it gets about 15 a month.
+
+</Section>
+
+<Section title="What I'd change today">
+
+Reading the code again two years later, there are four things I would do differently:
+
+### The types stop at the door
+
+The package is written in TypeScript, but `validatedEnv` is a `Record<string, any>`. After all the checks, TypeScript still doesn't know that `PORT` is a number:
+
+```ts
+const { PORT } = result.validatedEnv // any, not number
+```
+
+Today I would infer the result's types from the description, the way libraries like Zod do: if you say `type: "number"`, `PORT` is a `number` in your editor too.
+
+### A dependency nobody uses
+
+The package lists `dotenv` as a dependency, but the code never imports it. Everyone who installs env-protector downloads dotenv too, for nothing.
+
+### The same code twice
+
+The `validators/` folder has one class per type (`NumberValidator`, `EmailValidator`, …), but the validator uses a single `TypeValidators` class with the same logic. The folder is never imported: it's left over from an earlier version of the design.
+
+### An "undefined" in a message
+
+If a number only has a minimum, the error says `PORT must be between 1024 and undefined`. The message assumes there are always both limits.
+
+</Section>
+
+<Section title="What I learned">
+
+1. Check the configuration when the app starts. A clear error at startup is much cheaper than a strange failure in the middle of a request.
+2. Show every error at once. Whoever is fixing the configuration wants the full list, not a game of guessing one at a time.
+3. Writing it in TypeScript isn't the same as giving the user good types. The value of a TypeScript library is in what the user's editor knows.
+4. Read your old code again. Nothing here is serious, but I only found it by looking.
+
+</Section>
