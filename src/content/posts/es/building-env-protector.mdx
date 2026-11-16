@@ -1,0 +1,122 @@
+---
+title: "Cómo hice env-protector"
+description: "Mi paquete de npm más descargado: por qué una app debe revisar sus variables de entorno al arrancar, cómo lo hace env-protector y qué cambiaría hoy."
+date: "2026-11-15"
+tags: ["TypeScript", "npm", "Node.js"]
+---
+
+<Section title="El problema con process.env">
+
+Toda app de Node.js lee su configuración de variables de entorno: el puerto, la dirección de la base de datos, las llaves de las APIs. Llegan por `process.env`, y `process.env` tiene dos sorpresas.
+
+La primera es que todos los valores son texto, o `undefined` cuando faltan. Un puerto 8080 llega como `"8080"`, y `"false"` es un texto con algo escrito, así que cuenta como verdadero:
+
+```ts title="server.ts"
+process.env.DEBUG = "false"
+
+if (process.env.DEBUG) {
+  // Esto se ejecuta: "false" es un texto que no está vacío.
+}
+```
+
+La segunda es que nadie las revisa. Si falta `DATABASE_URL`, la app arranca como si todo estuviera bien y falla después, la primera vez que algún código necesita la base de datos. Tal vez en medio de una petición, tal vez en un servidor donde nadie está mirando los registros.
+
+Yo quería lo contrario: revisar todas las variables una vez, cuando la app arranca, y detenerse ahí mismo con un mensaje claro si algo está mal. Eso es env-protector.
+
+</Section>
+
+<Section title="Cómo se ve">
+
+Describes cada variable una vez, con su tipo y sus reglas, y pides la revisión:
+
+```ts title="env.ts"
+import { EnvValidator } from "env-protector"
+
+const result = new EnvValidator({
+  PORT: { type: "number", required: true, min: 1024, max: 65535, message: "PORT must be between 1024 and 65535" },
+  NODE_ENV: { type: "enum", required: true, enum: ["development", "production", "test"], default: "development", message: "Unknown NODE_ENV" },
+  API_KEY: { type: "pattern", required: true, pattern: /^sk_test_[a-zA-Z0-9]+$/, message: "Invalid API key format" },
+}).validate()
+
+if (!result.isValid) {
+  result.errors.forEach((error) => console.error(`- ${error.message}`))
+  process.exit(1)
+}
+```
+
+Dos decisiones definieron el resultado:
+
+- **Todos los errores de una vez.** La revisión no se detiene en el primer problema. Si tres variables están mal, ves tres mensajes y las corriges juntas, en vez de reiniciar la app tres veces para encontrarlas una por una.
+- **Valores ya convertidos.** `result.validatedEnv` trae las variables con su tipo real: `PORT` es el número 8080, `DEBUG` es `true` o `false`, y una lista como `"a,b,c"` se vuelve un arreglo.
+
+Soporta ocho tipos: string, number, boolean, url, email, array, enum y pattern. Cada variable puede tener además un valor por defecto y una revisión propia.
+
+</Section>
+
+<Section title="Cómo funciona por dentro">
+
+Todo el paquete es un ciclo sobre las variables que describes. Para cada una:
+
+1. Si es obligatoria, falta y no tiene valor por defecto, es un error.
+2. Si no, revisa el valor según su tipo.
+3. Si el valor es válido, lo convierte: de texto a número, a `true`/`false` o a un arreglo.
+4. Por último, revisa el rango de los números y ejecuta la revisión propia, si hay una.
+
+La conversión es donde se arregla la segunda sorpresa de `process.env`:
+
+```ts title="src/validators.ts"
+case "boolean":
+  const normalizedValue = String(value).toLowerCase()
+  return ["true", "1"].includes(normalizedValue)
+```
+
+El código son unas 540 líneas de TypeScript con 12 pruebas en Vitest. `npm publish` corre primero las pruebas y la compilación, así que una versión con pruebas fallando no puede llegar a npm.
+
+</Section>
+
+<Section title="Hecho en un día">
+
+Toda la historia son 31 commits, todos del 1 de diciembre de 2024: primero los tipos, luego el validador, luego las pruebas, luego una clase por tipo. Esa noche, a las 23:21 de Costa Rica, la primera versión ya estaba en npm.
+
+En el camino cambió de nombre dos veces. Empezó como `@anibalalpizar/env-validator`, pasó a `env-checker` y terminó como `env-protector`: env-checker está ocupado en npm desde 2016, y env-validator también.
+
+Dos años después tiene 594 descargas, la mayor cantidad de mis cuatro paquetes. Un poco de contexto sobre ese número: 150 llegaron el primer día, cuando espejos y escáneres de seguridad descargan solos cada paquete nuevo. Hoy tiene unas 15 al mes.
+
+</Section>
+
+<Section title="Qué cambiaría hoy">
+
+Leyendo el código otra vez dos años después, hay cuatro cosas que haría distinto:
+
+### Los tipos se quedan en la puerta
+
+El paquete está escrito en TypeScript, pero `validatedEnv` es un `Record<string, any>`. Después de todas las revisiones, TypeScript todavía no sabe que `PORT` es un número:
+
+```ts
+const { PORT } = result.validatedEnv // any, no number
+```
+
+Hoy deduciría los tipos del resultado a partir de la descripción, como hacen librerías como Zod: si dices `type: "number"`, `PORT` también es un `number` en tu editor.
+
+### Una dependencia que nadie usa
+
+El paquete lista `dotenv` como dependencia, pero el código nunca la importa. Todos los que instalan env-protector descargan también dotenv, para nada.
+
+### El mismo código dos veces
+
+La carpeta `validators/` tiene una clase por tipo (`NumberValidator`, `EmailValidator`, …), pero el validador usa una sola clase `TypeValidators` con la misma lógica. La carpeta nunca se importa: quedó de una versión anterior del diseño.
+
+### Un "undefined" en un mensaje
+
+Si un número solo tiene mínimo, el error dice `PORT must be between 1024 and undefined`. El mensaje supone que siempre hay los dos límites.
+
+</Section>
+
+<Section title="Qué aprendí">
+
+1. Revisa la configuración cuando la app arranca. Un error claro al inicio sale mucho más barato que una falla rara en medio de una petición.
+2. Muestra todos los errores de una vez. Quien está arreglando la configuración quiere la lista completa, no adivinar uno por uno.
+3. Escribirlo en TypeScript no es lo mismo que darle buenos tipos a quien lo usa. El valor de una librería en TypeScript está en lo que sabe el editor de quien la usa.
+4. Vuelve a leer tu código viejo. Nada de esto es grave, pero solo lo encontré al mirar.
+
+</Section>
