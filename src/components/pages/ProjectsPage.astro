@@ -208,7 +208,8 @@ const strings = {
     if (query) next.set("q", query)
     if (category !== "all") next.set("cat", category)
     const search = next.toString()
-    history.replaceState(null, "", search ? `?${search}` : location.pathname)
+    // Keeps the #p-… of a link to one project (from the ⌘K menu, for instance).
+    history.replaceState(null, "", (search ? `?${search}` : location.pathname) + location.hash)
   }
 
   input.addEventListener("input", update)
