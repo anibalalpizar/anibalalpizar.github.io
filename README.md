@@ -93,7 +93,7 @@ Plain Markdown paragraphs go here.
 </Section>
 ```
 
-The reading time is calculated from the text. Posts are listed newest first, and the list, the ⌘K menu, the RSS feeds and the link preview image update on their own.
+The reading time is calculated from the text. Posts are listed newest first, and the list, the ⌘K menu, the RSS feeds and the link preview image update on their own. The ⌘K menu also searches inside the text of every post, case study and project: `src/utils/search.ts` turns them into plain text at build time (`/search/en.json`, `/search/es.json`), and the menu fetches it the first time it opens.
 
 Inside a `<Section>`, besides paragraphs and the components above, posts can use plain Markdown:
 

@@ -108,6 +108,8 @@ const items = [
   hidden
   data-command-menu
   data-items={JSON.stringify(items)}
+  data-search-src={`/search/${lang}.json`}
+  data-in-text={g.inText}
   data-home={localePath(lang, "/")}
   data-empty-text={t.noResults}
 >
@@ -146,7 +148,12 @@ const items = [
     language?: Lang
     /** Extra words the search matches, e.g. "idioma" for the language item. */
     keywords?: string
+    /** Text results: the words around the match, shown under the label. */
+    snippet?: { before: string; match: string; after: string }
   }
+
+  /** A post, case study or project from /search/<lang>.json (src/utils/search.ts). */
+  type Page = { title: string; hint: string; url: string; text: string }
 
   const overlay = document.querySelector<HTMLElement>("[data-command-menu]")!
   const input = overlay.querySelector<HTMLInputElement>("[data-command-input]")!
@@ -158,6 +165,38 @@ const items = [
   let active = 0
   let results: Item[] = []
   let returnFocus: HTMLElement | null = null
+  let pages: { page: Page; text: string }[] = []
+  let loading: Promise<void> | undefined
+
+  /** Fetches the text of every page once, the first time the menu opens. */
+  function loadPages() {
+    loading ??= fetch(overlay.dataset.searchSrc!)
+      .then((response) => {
+        if (!response.ok) throw new Error(String(response.status))
+        return response.json() as Promise<Page[]>
+      })
+      .then((json) => {
+        pages = json.map((page) => ({ page, text: fold(page.text) }))
+        if (isOpen && input.value.trim()) filter(false)
+      })
+      .catch(() => {
+        // Without the text, the menu still searches titles; try again next time.
+        loading = undefined
+      })
+  }
+
+  /**
+   * Lowercase without accents, so "articulo" finds "artículo". One character
+   * stays one character, so a position in the folded text is the same in the original.
+   */
+  function fold(text: string) {
+    let folded = ""
+    for (const char of text) {
+      const base = char.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+      folded += base.length === char.length ? base : char
+    }
+    return folded
+  }
 
   function allItems(): Item[] {
     const light = getTheme() === "light"
@@ -166,19 +205,66 @@ const items = [
     )
   }
 
-  function filter() {
-    const query = input.value.trim().toLowerCase()
+  /** Posts, cases and projects whose text has every word of the query. */
+  function textResults(query: string, exclude: Set<string>): Item[] {
+    const words = query.split(/\s+/)
+    const found: { item: Item; rank: number }[] = []
+
+    for (const { page, text } of pages) {
+      if (exclude.has(page.url) || !words.every((word) => text.includes(word))) continue
+      // The whole phrase if it's there, otherwise the first word.
+      const phrase = text.indexOf(query)
+      let start = phrase >= 0 ? phrase : text.indexOf(words[0])
+      let end = start + (phrase >= 0 ? query.length : words[0].length)
+      // Whole words: "zona" shows (and links to) "zonas", since a link to a
+      // piece of text only finds whole words.
+      while (start > 0 && /[\p{L}\p{N}]/u.test(text[start - 1])) start--
+      while (end < text.length && /[\p{L}\p{N}]/u.test(text[end])) end++
+      const match = page.text.slice(start, end)
+
+      // A few words before the match, so it's never cut off at the right.
+      let from = Math.max(0, start - 20)
+      if (from > 0) from = page.text.indexOf(" ", from) + 1 || from
+      const before = (from > 0 ? "…" : "") + page.text.slice(from, start)
+      const after = page.text.slice(end, end + 80)
+
+      // "-" ends a text directive, so it's escaped too.
+      const fragment = encodeURIComponent(match).replace(/-/g, "%2D")
+      found.push({
+        item: {
+          group: overlay.dataset.inText!,
+          label: page.title,
+          hint: page.hint,
+          action: "go",
+          target: `${page.url}${page.url.includes("#") ? "" : "#"}:~:text=${fragment}`,
+          snippet: { before, match, after },
+        },
+        rank: (phrase >= 0 ? 1000 : 0) + text.split(words[0]).length,
+      })
+    }
+
+    return found
+      .sort((a, b) => b.rank - a.rank)
+      .slice(0, 6)
+      .map(({ item }) => item)
+  }
+
+  function filter(resetActive = true) {
+    const query = fold(input.value.trim().replace(/\s+/g, " "))
     const all = allItems()
     results = query
       ? all.filter((item) =>
-          `${item.label} ${item.group} ${item.hint} ${item.keywords ?? ""}`
-            .toLowerCase()
-            .includes(query)
+          fold(`${item.label} ${item.group} ${item.hint} ${item.keywords ?? ""}`).includes(query)
         )
       : all
-    active = 0
+    if (query.length >= 2) {
+      // Pages already listed by their title don't show up twice.
+      const listed = new Set(results.filter((item) => item.action === "go").map((item) => item.target!))
+      results = [...results, ...textResults(query, listed)]
+    }
+    if (resetActive || active >= results.length) active = 0
     render()
-    list.scrollTop = 0
+    if (resetActive) list.scrollTop = 0
   }
 
   function render() {
@@ -212,11 +298,26 @@ const items = [
       option.id = `command-item-${i}`
       option.setAttribute("role", "option")
       const label = document.createElement("span")
+      label.className = "label"
       label.textContent = item.label
+      if (item.snippet) {
+        // The words around the match, with the match in bold.
+        const snippet = document.createElement("span")
+        snippet.className = "snippet"
+        const match = document.createElement("mark")
+        match.textContent = item.snippet.match
+        snippet.append(item.snippet.before, match, item.snippet.after)
+        const text = document.createElement("span")
+        text.className = "text"
+        text.append(label, snippet)
+        option.append(text)
+      } else {
+        option.append(label)
+      }
       const hint = document.createElement("span")
       hint.className = "hint"
       hint.textContent = item.hint
-      option.append(label, hint)
+      option.append(hint)
       option.addEventListener("click", () => run(item))
       option.addEventListener("mousemove", () => {
         if (active !== i) setActive(i)
@@ -254,6 +355,7 @@ const items = [
     returnFocus = document.activeElement as HTMLElement | null
     input.value = ""
     filter()
+    loadPages()
     overlay.hidden = false
     // Fill the space of the hidden scrollbar so the page doesn't shift sideways.
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
@@ -335,7 +437,7 @@ const items = [
     }
   })
 
-  input.addEventListener("input", filter)
+  input.addEventListener("input", () => filter())
 
   overlay.querySelector("[data-close-command-menu]")!.addEventListener("click", () => close())
 
@@ -446,8 +548,32 @@ const items = [
   }
 
   .list :global(.hint) {
+    flex-shrink: 0;
     font-size: 12px;
     color: var(--muted);
+  }
+
+  /* Text results: the title, and under it the words around the match. */
+  .list :global(.text) {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 8px 0;
+  }
+
+  .list :global(.snippet) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .list :global(.snippet mark) {
+    background: transparent;
+    color: var(--fg);
+    font-weight: 600;
   }
 
   .list :global(.empty) {
