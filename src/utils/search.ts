@@ -27,7 +27,9 @@ export function plainText(mdx: string) {
       .replace(/^```.*$/gm, " ")
       .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
       .replace(/^\s*(?:#+|[-*]|\d+\.)\s+/gm, "")
-      .replace(/[*`]/g, "")
+      // **bold** loses its asterisks; a * in a code sample (a regex, say) stays.
+      .replace(/\*\*([^*\n]+)\*\*/g, "$1")
+      .replace(/`/g, "")
       .replace(/\s+/g, " ")
       .trim()
   )
