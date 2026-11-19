@@ -38,9 +38,12 @@ const rows = projects.map((project, i) => {
     index: two(i + 1),
     kind,
     description,
-    // Everything the search box matches against, in the page's language.
+    // Everything the search box matches against, in the page's language,
+    // lowercase and without accents (the script folds the query the same way).
     haystack: [project.name, description, project.stack.join(" "), kind, t.categories[project.category]]
       .join(" ")
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
       .toLowerCase(),
   }
 })
@@ -181,7 +184,8 @@ const strings = {
 
   function update() {
     const query = input.value.trim()
-    const needle = query.toLowerCase()
+    // "contrasenas" finds "contraseñas", like the ⌘K menu.
+    const needle = query.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
     const matching = rows.filter((row) => row.dataset.search!.includes(needle))
 
     // Tab counts follow the search, so they show where results are.
