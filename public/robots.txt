@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+# Data the ⌘K menu and the terminal fetch; not pages to show in search results.
+Disallow: /search/
+Disallow: /terminal/
 
 Sitemap: https://anibalalpizar.github.io/sitemap-index.xml
