@@ -102,6 +102,7 @@ const en = {
   notFoundText: "There’s nothing at this address. The page may have moved, or the link may be wrong.",
   notFoundPath: "Requested",
   notFoundHome: "Back to home",
+  notFoundSearch: "Search the site",
   /** ⌘K button label below 760px, where it's the only navigation. */
   menu: "Menu",
   /** Replaces the "esc" chip in the command menu on touch screens. */
@@ -259,6 +260,7 @@ const es: typeof en = {
   notFoundText: "No hay nada en esta dirección. Puede que la página se haya movido o que el enlace esté mal.",
   notFoundPath: "Dirección",
   notFoundHome: "Volver al inicio",
+  notFoundSearch: "Buscar en el sitio",
   menu: "Menú",
   close: "Cerrar",
   fullSize: "Ampliar ↗",

@@ -24,6 +24,7 @@ const home = localePath(lang, "/")
       <div class="actions">
         <a href={home} class="button primary">{t.notFoundHome}</a>
         <a href={localePath(lang, "/projects")} class="button secondary">{t.allProjects}</a>
+        <button type="button" class="button secondary" data-open-command-menu>{t.notFoundSearch}</button>
       </div>
     </section>
 
@@ -104,6 +105,8 @@ const home = localePath(lang, "/")
   .secondary {
     border: 1px solid var(--line);
     background: var(--bg);
+    font-size: 14px;
+    cursor: pointer;
     transition: background-color 150ms ease;
   }
 
