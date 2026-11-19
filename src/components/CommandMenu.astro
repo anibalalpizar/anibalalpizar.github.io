@@ -416,7 +416,13 @@ const items = [
     switch (event.key) {
       case "Escape":
         event.preventDefault()
-        close()
+        // First Escape clears the search, the next one closes the menu.
+        if (input.value) {
+          input.value = ""
+          filter()
+        } else {
+          close()
+        }
         break
       case "ArrowDown":
         event.preventDefault()
