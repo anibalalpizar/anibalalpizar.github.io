@@ -21,7 +21,7 @@ if (process.env.DEBUG) {
 
 La segunda es que nadie las revisa. Si falta `DATABASE_URL`, la app arranca como si todo estuviera bien y falla después, la primera vez que algún código necesita la base de datos. Tal vez en medio de una petición, tal vez en un servidor donde nadie está mirando los registros.
 
-Yo quería lo contrario: revisar todas las variables una vez, cuando la app arranca, y detenerse ahí mismo con un mensaje claro si algo está mal. Eso es env-protector.
+Yo quería lo contrario: revisar todas las variables una vez, cuando la app arranca, y detenerse ahí mismo con un mensaje claro si algo está mal. Eso es [env-protector](https://www.npmjs.com/package/env-protector) (su código está [en GitHub](https://github.com/anibalalpizar/env-protector)).
 
 </Section>
 

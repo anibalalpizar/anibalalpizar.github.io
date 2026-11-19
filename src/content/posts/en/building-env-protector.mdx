@@ -21,7 +21,7 @@ if (process.env.DEBUG) {
 
 The second is that nothing checks them. If `DATABASE_URL` is missing, the app starts as if everything were fine and only fails later, the first time some code needs the database. Maybe in the middle of a request, maybe on a server where nobody is looking at the logs.
 
-I wanted the opposite: check every variable once, when the app starts, and stop right there with a clear message if something is wrong. That's env-protector.
+I wanted the opposite: check every variable once, when the app starts, and stop right there with a clear message if something is wrong. That's [env-protector](https://www.npmjs.com/package/env-protector) (its code is [on GitHub](https://github.com/anibalalpizar/env-protector)).
 
 </Section>
 
