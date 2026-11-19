@@ -308,6 +308,13 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
     color: var(--bg);
   }
 
+  /* The words a ⌘K text result links to (#:~:text=…): inverted like a
+     selection instead of the browser's yellow or purple. */
+  ::target-text {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
   /* Keyboard focus: a ring in the current text colour, so it also shows on
      inverted rows and in the light Contact block. Mouse clicks don't show it. */
   :focus-visible {
