@@ -64,7 +64,8 @@ export async function searchData(lang: Lang): Promise<SearchEntry[]> {
       title: project.name,
       hint: L(kinds[project.kind], lang),
       url: localePath(lang, `/projects#p-${project.id}`),
-      text: `${L(project.description, lang)} ${project.stack.join(" · ")}`,
+      // With its name: only the featured projects are in the menu by name.
+      text: `${project.name}. ${L(project.description, lang)} ${project.stack.join(" · ")}`,
     })),
   ]
 }

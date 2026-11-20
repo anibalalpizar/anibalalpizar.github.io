@@ -206,12 +206,13 @@ const items = [
   }
 
   /** Posts, cases and projects whose text has every word of the query. */
+  /** `exclude`: titles already in the results, so a page doesn't show up twice. */
   function textResults(query: string, exclude: Set<string>): Item[] {
     const words = query.split(/\s+/)
     const found: { item: Item; rank: number }[] = []
 
     for (const { page, text } of pages) {
-      if (exclude.has(page.url) || !words.every((word) => text.includes(word))) continue
+      if (exclude.has(page.title) || !words.every((word) => text.includes(word))) continue
       // The whole phrase if it's there, otherwise the first word.
       const phrase = text.indexOf(query)
       let start = phrase >= 0 ? phrase : text.indexOf(words[0])
@@ -258,8 +259,8 @@ const items = [
         )
       : all
     if (query.length >= 2) {
-      // Pages already listed by their title don't show up twice.
-      const listed = new Set(results.filter((item) => item.action === "go").map((item) => item.target!))
+      // Pages already listed by their title (a post, a case, a featured project) don't show up twice.
+      const listed = new Set(results.map((item) => item.label))
       results = [...results, ...textResults(query, listed)]
     }
     if (resetActive || active >= results.length) active = 0
