@@ -54,7 +54,10 @@ export async function searchData(lang: Lang): Promise<SearchEntry[]> {
         title: job ? L(job.company, lang) : `${before}${link}${after}`,
         hint: t.groups.cases,
         url: localePath(lang, entry.data.path),
-        text: `${before}${link}${after}. ${entry.data.lead} ${plainText(entry.body ?? "")}`,
+        // The facts too (client, organization, stack): "Prisma" finds the case that used it.
+        text: `${before}${link}${after}. ${entry.data.lead} ${plainText(entry.body ?? "")} ${entry.data.facts
+          .map((fact) => fact.value)
+          .join(" · ")}`,
       }
     }),
     ...projects.map((project) => ({
