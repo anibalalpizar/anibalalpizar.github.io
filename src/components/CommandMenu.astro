@@ -466,9 +466,13 @@ const items = [
     if (event.target === overlay) close()
   })
 
-  document
-    .querySelectorAll("[data-open-command-menu]")
-    .forEach((button) => button.addEventListener("click", open))
+  document.querySelectorAll("[data-open-command-menu]").forEach((button) => {
+    button.addEventListener("click", open)
+    // Pointing at the button (or tabbing to it) starts fetching the text to
+    // search, so it's usually there by the time the menu opens.
+    button.addEventListener("pointerenter", loadPages, { once: true })
+    button.addEventListener("focus", loadPages, { once: true })
+  })
 </script>
 
 <style>
