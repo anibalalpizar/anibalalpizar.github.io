@@ -21,6 +21,11 @@ export async function blogFeed(lang: Lang) {
       link: localePath(lang, post.path),
       categories: post.data.tags,
     })),
-    customData: `<language>${locales[lang]}</language>`,
+    // The feed's own address (atom:link rel="self"), which feed validators expect.
+    xmlns: { atom: "http://www.w3.org/2005/Atom" },
+    customData: [
+      `<language>${locales[lang]}</language>`,
+      `<atom:link href="${new URL(lang === "es" ? "/es/rss.xml" : "/rss.xml", SITE_URL).href}" rel="self" type="application/rss+xml"/>`,
+    ].join(""),
   })
 }
