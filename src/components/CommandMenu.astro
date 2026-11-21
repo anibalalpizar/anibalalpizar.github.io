@@ -205,18 +205,32 @@ const items = [
     )
   }
 
+  /**
+   * A pattern for a word or phrase that also allows a dot between letters,
+   * so "nextjs" finds "Next.js" and "nodejs" finds "Node.js".
+   */
+  function pattern(query: string, flags = "") {
+    const chars = [...query].map((char) =>
+      char === " " ? "\\s+" : char.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    )
+    return new RegExp(chars.join("\\.?"), flags)
+  }
+
   /** Posts, cases and projects whose text has every word of the query. */
   /** `exclude`: titles already in the results, so a page doesn't show up twice. */
   function textResults(query: string, exclude: Set<string>): Item[] {
-    const words = query.split(/\s+/)
+    const words = query.split(/\s+/).map((word) => pattern(word))
+    const whole = pattern(query)
+    const first = pattern(query.split(/\s+/)[0], "g")
     const found: { item: Item; rank: number }[] = []
 
     for (const { page, text } of pages) {
-      if (exclude.has(page.title) || !words.every((word) => text.includes(word))) continue
+      if (exclude.has(page.title) || !words.every((word) => word.test(text))) continue
       // The whole phrase if it's there, otherwise the first word.
-      const phrase = text.indexOf(query)
-      let start = phrase >= 0 ? phrase : text.indexOf(words[0])
-      let end = start + (phrase >= 0 ? query.length : words[0].length)
+      const phrase = text.match(whole)
+      const hit = phrase ?? text.match(words[0])!
+      let start = hit.index!
+      let end = start + hit[0].length
       // Whole words: "zona" shows (and links to) "zonas", since a link to a
       // piece of text only finds whole words.
       while (start > 0 && /[\p{L}\p{N}]/u.test(text[start - 1])) start--
@@ -240,7 +254,7 @@ const items = [
           target: `${page.url}${page.url.includes("#") ? "" : "#"}:~:text=${fragment}`,
           snippet: { before, match, after },
         },
-        rank: (phrase >= 0 ? 1000 : 0) + text.split(words[0]).length,
+        rank: (phrase ? 1000 : 0) + (text.match(first)?.length ?? 0),
       })
     }
 
