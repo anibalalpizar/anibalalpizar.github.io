@@ -192,7 +192,7 @@ const items = [
   function fold(text: string) {
     let folded = ""
     for (const char of text) {
-      const base = char.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+      const base = char.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
       folded += base.length === char.length ? base : char
     }
     return folded

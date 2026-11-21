@@ -43,7 +43,7 @@ const rows = projects.map((project, i) => {
     haystack: [project.name, description, project.stack.join(" "), kind, t.categories[project.category]]
       .join(" ")
       .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "")
+      .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase(),
   }
 })
@@ -185,7 +185,7 @@ const strings = {
   function update() {
     const query = input.value.trim()
     // "contrasenas" finds "contraseñas", like the ⌘K menu.
-    const needle = query.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+    const needle = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
     const matching = rows.filter((row) => row.dataset.search!.includes(needle))
 
     // Tab counts follow the search, so they show where results are.
