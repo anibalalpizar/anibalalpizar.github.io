@@ -15,7 +15,8 @@ const label = title ?? (language && language !== "plaintext" ? language : "")
 <div class="code" data-code-block>
   <div class="bar">
     <span class="label">{label}</span>
-    <button type="button" class="copy" data-copy data-copied={t.copied}>{t.copy}</button>
+    <!-- aria-live: screen readers announce "Copied" when the label changes. -->
+    <button type="button" class="copy" aria-live="polite" data-copy data-copied={t.copied}>{t.copy}</button>
   </div>
   <pre {...pre} data-language={language}><slot /></pre>
 </div>
