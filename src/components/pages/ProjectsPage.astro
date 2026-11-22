@@ -44,7 +44,9 @@ const rows = projects.map((project, i) => {
       .join(" ")
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase(),
+      .toLowerCase()
+      // Dots between letters don't count, so "nextjs" finds "Next.js".
+      .replace(/(?<=\w)\.(?=\w)/g, ""),
   }
 })
 
@@ -184,8 +186,9 @@ const strings = {
 
   function update() {
     const query = input.value.trim()
-    // "contrasenas" finds "contraseñas", like the ⌘K menu.
+    // Folded like the haystack: "contrasenas" finds "contraseñas", "nextjs" finds "Next.js".
     const needle = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      .replace(/(?<=\w)\.(?=\w)/g, "")
     const matching = rows.filter((row) => row.dataset.search!.includes(needle))
 
     // Tab counts follow the search, so they show where results are.
