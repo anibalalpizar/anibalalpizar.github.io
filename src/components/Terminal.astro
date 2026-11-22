@@ -273,6 +273,8 @@ const page = {
 
     blog() {
       for (const post of data.posts) print([`  ${post.date}  `, { text: post.title, href: post.href }])
+      // The feed, for RSS readers.
+      print("", ["  rss         ", { text: data.links.rss.slice(1), href: data.links.rss }])
     },
 
     stack() {
