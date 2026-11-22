@@ -46,6 +46,17 @@ const home = localePath(lang, "/")
   if (row && !/^\/(es\/)?404(\/|\.html)?$/.test(path)) {
     row.querySelector("[data-missing-path]")!.textContent = path
     row.hidden = false
+
+    // "Search the site" starts with the words of the address:
+    // /blog/env-protector/ searches "env protector".
+    const last = path.split("/").filter((part) => part && part !== "es").pop() ?? ""
+    let words = last.replace(/\.html?$/, "")
+    try {
+      words = decodeURIComponent(words)
+    } catch {}
+    words = words.replace(/[-_+]+/g, " ").trim()
+    const search = document.querySelector<HTMLElement>(".actions [data-open-command-menu]")
+    if (search && words) search.dataset.commandQuery = words
   }
 </script>
 

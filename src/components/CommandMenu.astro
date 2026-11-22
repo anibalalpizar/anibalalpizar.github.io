@@ -373,11 +373,12 @@ const items = [
       list.scrollTop = bottom - list.clientHeight + 8
   }
 
-  function open() {
+  /** `query`: text to start with, e.g. the words of a missing address on the 404 page. */
+  function open(query = "") {
     if (isOpen) return
     isOpen = true
     returnFocus = document.activeElement as HTMLElement | null
-    input.value = ""
+    input.value = query
     filter()
     loadPages()
     overlay.hidden = false
@@ -476,7 +477,7 @@ const items = [
   })
 
   document.querySelectorAll("[data-open-command-menu]").forEach((button) => {
-    button.addEventListener("click", open)
+    button.addEventListener("click", () => open((button as HTMLElement).dataset.commandQuery))
     // Pointing at the button (or tabbing to it) starts fetching the text to
     // search, so it's usually there by the time the menu opens.
     button.addEventListener("pointerenter", loadPages, { once: true })
