@@ -12,6 +12,8 @@ const blogHref = localePath(lang, "/blog")
 // Below 760px the nav links are hidden, so the footer is a visible way to the blog.
 // Not on the blog list itself.
 const showBlog = Astro.url.pathname !== blogHref
+// The blog's feed, so readers can subscribe from any page, posts included.
+const rssHref = lang === "es" ? "/es/rss.xml" : "/rss.xml"
 ---
 
 <footer class="footer">
@@ -19,6 +21,7 @@ const showBlog = Astro.url.pathname !== blogHref
   <span class="dim">© {year} Aníbal</span>
   <span class="links">
     {showBlog && <a href={blogHref} class="dim link">{ui[lang].navBlog}</a>}
+    <a href={rssHref} class="dim link">RSS</a>
     <a href="#top" class="dim link" data-scroll-to="top">{ui[lang].backTop}</a>
   </span>
 </footer>
