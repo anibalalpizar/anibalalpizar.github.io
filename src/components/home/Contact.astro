@@ -39,6 +39,7 @@ const year = new Date().getFullYear()
     <span class="dim">© {year} Aníbal</span>
     <span class="links">
       <a href={localePath(lang, "/blog")} class="dim link">{t.navBlog}</a>
+      <a href={lang === "es" ? "/es/rss.xml" : "/rss.xml"} class="dim link">RSS</a>
       <a href={localePath(lang, "/#top")} class="dim link" data-scroll-to="top">{t.backTop}</a>
     </span>
   </footer>
