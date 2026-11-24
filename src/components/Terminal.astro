@@ -407,7 +407,7 @@ const page = {
     }
   }
 
-  // Tab: completes the command, or the name after open / cd / cat.
+  // Tab: completes the command, or the word after open / cd / cat / theme / lang.
   function complete() {
     const value = input.value
     const parts = value.split(/\s+/)
@@ -420,6 +420,10 @@ const page = {
       options = [...sections, "blog", "~"]
     } else if (parts[0] === "cat") {
       options = ["experience", "projects", "blog", "stack", "contact"]
+    } else if (parts[0] === "theme") {
+      options = ["light", "dark"]
+    } else if (parts[0] === "lang") {
+      options = [page.otherLang.lang]
     } else return
     const last = parts.at(-1)!.toLowerCase()
     const matches = options.filter((option) => option.toLowerCase().startsWith(last))
