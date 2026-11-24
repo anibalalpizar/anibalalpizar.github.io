@@ -185,6 +185,7 @@ const page = {
     { names: ["home", "inicio"], label: "~", href: data.pages.home },
     { names: ["blog"], label: "blog", href: data.pages.blog },
     { names: ["projects", "proyectos"], label: "projects", href: data.pages.projects },
+    { names: ["rss", "feed"], label: "RSS", href: data.links.rss },
     ...data.experience
       .filter((job: { href?: string }) => job.href)
       .map((job: { company: string; href: string }) => ({ names: [job.company], label: job.company, href: job.href })),
