@@ -342,6 +342,12 @@ const page = {
       print(s.sudo)
     },
 
+    // Where you are, with the home page as ~: /es/blog/x/ prints ~/blog/x.
+    pwd() {
+      const rest = location.pathname.startsWith(data.home) ? location.pathname.slice(data.home.length) : location.pathname
+      print(`~/${rest}`.replace(/\/+$/, "").replace(/\/{2,}/g, "/"))
+    },
+
     date() {
       print(new Date().toString())
     },
