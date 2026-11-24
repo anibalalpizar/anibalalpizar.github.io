@@ -358,6 +358,32 @@ const page = {
   // `cat experience` works too.
   commands.cat = (args) => (commands[args[0]] ? commands[args[0]]([]) : print(`cat: ${args.join(" ")}: ${s.noMatch.toLowerCase()}`))
 
+  /** The command a typo most likely meant ("hepl" → "help"), if any is close. */
+  function closest(word: string) {
+    // Edits needed to turn a into b; two swapped letters count as one.
+    const distance = (a: string, b: string) => {
+      const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)])
+      for (let j = 1; j <= b.length; j++) d[0][j] = j
+      for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1
+          d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost)
+          if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+            d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1)
+          }
+        }
+      }
+      return d[a.length][b.length]
+    }
+    let best: string | undefined
+    let bestDistance = word.length < 5 ? 1 : 2
+    for (const name of Object.keys(commands)) {
+      const d = distance(word, name)
+      if (d <= bestDistance) [best, bestDistance] = [name, d - 1]
+    }
+    return best
+  }
+
   async function runLine(line: string) {
     const text = line.trim()
     echo(text)
@@ -375,7 +401,10 @@ const page = {
     const [name, ...args] = text.split(/\s+/)
     const command = commands[name.toLowerCase()]
     if (command) command(args)
-    else print(`${name}: ${s.notFound}. ${s.tryHelp}`)
+    else {
+      const guess = closest(name.toLowerCase())
+      print(`${name}: ${s.notFound}. ${guess ? `${s.didYouMean} ${guess}?` : s.tryHelp}`)
+    }
   }
 
   // Tab: completes the command, or the name after open / cd / cat.
