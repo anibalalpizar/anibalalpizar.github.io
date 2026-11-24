@@ -228,6 +228,7 @@ const page = {
     help() {
       const usage: Record<string, string> = {
         projects: "projects [word]",
+        blog: "blog [word]",
         open: "open <name>",
         cd: "cd <section>",
         theme: "theme [light|dark]",
@@ -272,8 +273,11 @@ const page = {
       }
     },
 
-    blog() {
-      for (const post of data.posts) print([`  ${post.date}  `, { text: post.title, href: post.href }])
+    blog(args) {
+      const word = normalize(args.join(""))
+      const list = data.posts.filter((post: { title: string }) => !word || normalize(post.title).includes(word))
+      if (!list.length) return print(`${s.noMatch} "${args.join(" ")}"`)
+      for (const post of list) print([`  ${post.date}  `, { text: post.title, href: post.href }])
       // The feed, for RSS readers.
       print("", ["  rss         ", { text: data.links.rss.slice(1), href: data.links.rss }])
     },
