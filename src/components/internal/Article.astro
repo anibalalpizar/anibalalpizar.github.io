@@ -58,7 +58,8 @@ const t = ui[lang]
           <div class="cell">
             <span class="cell-label">{cell.label}</span>
             <span class="cell-value">
-              <span>{cell.value}</span>
+              {/* A date cell is a <time>, so browsers and search engines can read it. */}
+              {cell.date ? <time datetime={cell.date}>{cell.value}</time> : <span>{cell.value}</span>}
               {cell.sub && (
                 <span class="cell-sub" data-ago={cell.date} data-lang={lang}>
                   {cell.sub}
