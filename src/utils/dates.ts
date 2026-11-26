@@ -17,13 +17,31 @@ export function monthsSince(startDate: string, lang: Lang, now = new Date()) {
   return `${months} ${unit}`
 }
 
-/** "2y ago" / "hace 2 años"; months under a year: "5mo ago" / "hace 5 meses". */
+/**
+ * "2y ago" / "hace 2 años"; months under a year: "5mo ago" / "hace 5 meses";
+ * under a month: "2w ago" / "hace 2 semanas", "3d ago" / "hace 3 días", "today" / "hoy".
+ */
 export function timeAgo(date: string, lang: Lang, now = new Date()) {
   const d = parse(date)
   let months = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth())
   if (now.getDate() < d.getDate()) months--
   months = Math.max(0, months)
   const years = Math.floor(months / 12)
+
+  // A new post said "0mo ago"; count days and weeks instead.
+  if (months === 0) {
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12)
+    const days = Math.max(0, Math.round((today.getTime() - d.getTime()) / 86_400_000))
+    const weeks = Math.floor(days / 7)
+    if (lang === "es") {
+      if (days === 0) return "hoy"
+      if (weeks >= 1) return weeks === 1 ? "hace 1 semana" : `hace ${weeks} semanas`
+      return days === 1 ? "ayer" : `hace ${days} días`
+    }
+    if (days === 0) return "today"
+    if (weeks >= 1) return `${weeks}w ago`
+    return days === 1 ? "yesterday" : `${days}d ago`
+  }
 
   if (lang === "es") {
     if (years >= 1) return years === 1 ? "hace 1 año" : `hace ${years} años`
