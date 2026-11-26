@@ -1,0 +1,12 @@
+---
+// Links in MDX ([text](url)). Links to other sites open in a new tab, like the
+// GitHub and LinkedIn links everywhere else on the site.
+import type { HTMLAttributes } from "astro/types"
+
+type Props = HTMLAttributes<"a">
+
+const { href, ...rest } = Astro.props
+const external = /^https?:\/\//.test(String(href ?? ""))
+---
+
+<a href={href} {...(external ? { target: "_blank", rel: "noreferrer" } : {})} {...rest}><slot /></a>
