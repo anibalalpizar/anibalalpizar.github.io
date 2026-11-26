@@ -21,7 +21,8 @@ const id = title
   <div class="grid">
     <span class="index" aria-hidden="true"></span>
     <div class="body">
-      <h2>{title}</h2>
+      <!-- The heading links to its own section, so a reader can share or bookmark it. -->
+      <h2><a href={`#${id}`} class="heading-link">{title}</a></h2>
       <slot />
     </div>
   </div>
@@ -67,6 +68,22 @@ const id = title
     line-height: 1.15;
     text-wrap: balance;
     hyphens: auto;
+  }
+
+  /* A "#" appears on hover, as a hint that the heading is a link. */
+  .body .heading-link {
+    text-decoration: none;
+  }
+
+  .heading-link::after {
+    content: " #";
+    opacity: 0;
+    transition: opacity 150ms ease;
+  }
+
+  .heading-link:hover::after,
+  .heading-link:focus-visible::after {
+    opacity: var(--dim);
   }
 
   /* Paragraphs come from the MDX file, so they need :global to be styled here. */
