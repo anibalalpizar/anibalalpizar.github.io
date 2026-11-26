@@ -7,11 +7,13 @@ import { getPosts } from "./posts"
 export async function blogFeed(lang: Lang) {
   const t = ui[lang]
   const posts = await getPosts(lang)
+  const title = `${t.navBlog} — ${FULL_NAME}`
+  const blogUrl = new URL(localePath(lang, "/blog"), SITE_URL).href
   return rss({
-    title: `${t.navBlog} — ${FULL_NAME}`,
+    title,
     description: t.blogDescription,
     // The feed links to the blog in its language; item links resolve against the origin.
-    site: new URL(localePath(lang, "/blog"), SITE_URL).href,
+    site: blogUrl,
     trailingSlash: true,
     items: posts.map((post) => ({
       title: post.data.title,
@@ -26,6 +28,8 @@ export async function blogFeed(lang: Lang) {
     customData: [
       `<language>${locales[lang]}</language>`,
       `<atom:link href="${new URL(lang === "es" ? "/es/rss.xml" : "/rss.xml", SITE_URL).href}" rel="self" type="application/rss+xml"/>`,
+      // The picture feed readers show next to the blog's name.
+      `<image><url>${new URL("/logo.jpg", SITE_URL).href}</url><title>${title}</title><link>${blogUrl}</link></image>`,
     ].join(""),
   })
 }
