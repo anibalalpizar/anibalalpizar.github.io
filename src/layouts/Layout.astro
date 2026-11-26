@@ -454,4 +454,47 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
     display: flex;
     flex-direction: column;
   }
+
+  /* Printing a post or case study: black on white, without the menus and buttons. */
+  @media print {
+    :root,
+    :root[data-theme] {
+      --bg: #ffffff;
+      --fg: #000000;
+      --muted: #555555;
+      --line: #dddddd;
+      --cross: #999999;
+      --guide: #d6d6d6;
+      --hover: #f4f4f4;
+      --active: #f2f2f2;
+      --surface: #ffffff;
+      --dim: 0.8;
+      color-scheme: light;
+    }
+
+    .header,
+    .footer,
+    .pager,
+    [data-copy],
+    [data-terminal],
+    [data-command-menu] {
+      display: none !important;
+    }
+
+    .frame {
+      border: 0;
+    }
+
+    /* Paper can't be clicked: write out where links to other sites go. */
+    .article a[href^="http"]::after {
+      content: " (" attr(href) ")";
+      font-size: 0.85em;
+      overflow-wrap: anywhere;
+    }
+
+    pre,
+    figure {
+      break-inside: avoid;
+    }
+  }
 </style>
