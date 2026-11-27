@@ -36,11 +36,14 @@ interface Props {
   next?: Neighbor
   /** Shared with the row or link that opens this page (src/utils/transitions.ts). */
   transition?: string
+  /** The article's sections (src/utils/sections.ts); from three on, they get a table of contents. */
+  sections?: { id: string; title: string }[]
 }
 
-const { lang, backHref, backLabel, meta, metaPrefix, lead, cells, pagerLabel, prev, next, transition } =
+const { lang, backHref, backLabel, meta, metaPrefix, lead, cells, pagerLabel, prev, next, transition, sections = [] } =
   Astro.props
 const t = ui[lang]
+const two = (n: number) => String(n).padStart(2, "0")
 ---
 
 <main class="page article">
@@ -71,6 +74,27 @@ const t = ui[lang]
       }
     </div>
   </section>
+
+  {
+    sections.length >= 3 && (
+      <nav class="toc" aria-label={t.contents}>
+        <Marks />
+        <div class="toc-grid">
+          <span class="toc-label">{t.contents}</span>
+          <ol class="toc-list">
+            {sections.map((section, i) => (
+              <li>
+                <a href={`#${section.id}`} class="toc-link">
+                  <span class="toc-index">{two(i + 1)}</span>
+                  <span>{section.title}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </nav>
+    )
+  }
 
   <slot />
 
@@ -157,6 +181,65 @@ const t = ui[lang]
   .pager {
     position: relative;
     border-top: 1px solid var(--line);
+  }
+
+  /* Table of contents: the same two columns as the sections below it. */
+  .toc {
+    position: relative;
+    border-top: 1px solid var(--line);
+  }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: minmax(56px, 120px) minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+    padding: clamp(32px, 5vw, 48px) var(--px);
+  }
+
+  .toc-label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: var(--dim);
+  }
+
+  .toc-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .toc-link {
+    display: inline-flex;
+    gap: 16px;
+    font-size: 15px;
+    line-height: 1.4;
+    opacity: var(--dim);
+    transition: opacity 150ms ease;
+  }
+
+  .toc-link:hover,
+  .toc-link:focus-visible {
+    opacity: 1;
+  }
+
+  .toc-index {
+    flex-shrink: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Stacked on phones, like the sections (src/components/mdx/Section.astro). */
+  @media (max-width: 639.98px) {
+    .toc-grid {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 16px;
+    }
   }
 
   .cells {

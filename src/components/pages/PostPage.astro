@@ -8,6 +8,7 @@ import { localePath, ui, type Lang } from "../../i18n/ui"
 import { formatDate, timeAgo } from "../../utils/dates"
 import type { Post } from "../../utils/posts"
 import { postData } from "../../utils/structuredData"
+import { sectionsOf } from "../../utils/sections"
 import { postTransition } from "../../utils/transitions"
 
 interface Props {
@@ -69,6 +70,7 @@ const ogImage = { path: `/og/${lang}${post.path}.png`, alt: title }
     pagerLabel={t.navBlog}
     prev={neighbor(-1)}
     next={neighbor(1)}
+    sections={sectionsOf(post.body ?? "")}
     transition={postTransition(post.slugName)}
   >
     <Fragment slot="title">{title}</Fragment>
