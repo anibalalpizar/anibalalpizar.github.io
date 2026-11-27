@@ -28,7 +28,7 @@ const rssHref = lang === "es" ? "/es/rss.xml" : "/rss.xml"
     posts.map((post) => ({ path: post.path, headline: post.data.title, date: post.data.date }))
   )}
 >
-  <main class="page">
+  <main id="content" class="page">
     <section id="top" class="hero">
       <PageBar
         backHref={localePath(lang, "/")}

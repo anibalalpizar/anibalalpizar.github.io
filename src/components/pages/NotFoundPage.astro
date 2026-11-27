@@ -16,7 +16,7 @@ const home = localePath(lang, "/")
 ---
 
 <Layout lang={lang} title={`${t.notFoundTitle.replace(/\.$/, "")} — ${FULL_NAME}`} path="/404" page="not-found">
-  <main class="page">
+  <main id="content" class="page">
     <section id="top" class="hero">
       <PageBar backHref={home} backLabel={t.backHome} meta={t.notFoundCode} />
       <h1>{t.notFoundTitle}</h1>

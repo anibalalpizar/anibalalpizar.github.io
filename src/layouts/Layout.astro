@@ -197,6 +197,8 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
     </script>
   </head>
   <body>
+    <!-- First stop for keyboard and screen reader users: jumps past the header. -->
+    <a href="#content" class="skip-link">{ui[lang].skipToContent}</a>
     <div class="site">
       <div class="frame">
         <Header lang={lang} page={page} path={path} />
@@ -455,6 +457,26 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
     flex-direction: column;
   }
 
+  /* Hidden until it gets keyboard focus. */
+  .skip-link {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    padding: 10px 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--fg);
+    color: var(--bg);
+    font-size: 13px;
+    font-weight: 500;
+    transform: translateY(-200%);
+  }
+
+  .skip-link:focus-visible {
+    transform: none;
+  }
+
   /* Printing a post or case study: black on white, without the menus and buttons. */
   @media print {
     :root,
@@ -472,6 +494,7 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
       color-scheme: light;
     }
 
+    .skip-link,
     .header,
     .footer,
     .pager,

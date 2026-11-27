@@ -18,7 +18,7 @@ const { lang } = Astro.props
 ---
 
 <Layout lang={lang} title={ui[lang].docTitle} path="/" page="home" structuredData={homeData(lang)}>
-  <main class="page">
+  <main id="content" class="page">
     <Hero lang={lang} />
     <Facts lang={lang} />
     <Experience lang={lang} />
