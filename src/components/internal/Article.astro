@@ -47,6 +47,8 @@ const two = (n: number) => String(n).padStart(2, "0")
 ---
 
 <main class="page article">
+  <!-- How far the reader is: a line across the top that fills as the page scrolls. -->
+  <div class="progress" aria-hidden="true"></div>
   <section id="top" class="hero" {...transitionAttrs(transition)}>
     <PageBar backHref={backHref} backLabel={backLabel} metaPrefix={metaPrefix} meta={meta} />
     <h1><slot name="title" /></h1>
@@ -181,6 +183,42 @@ const two = (n: number) => String(n).padStart(2, "0")
   .pager {
     position: relative;
     border-top: 1px solid var(--line);
+  }
+
+  /* Driven by the scroll itself, no script. Browsers without scroll timelines don't show it. */
+  .progress {
+    display: none;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .progress {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      height: 2px;
+      background: var(--fg);
+      transform-origin: left;
+      animation: progress linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+
+  @keyframes progress {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @media print {
+    .progress {
+      display: none !important;
+    }
   }
 
   /* Table of contents: the same two columns as the sections below it. */
