@@ -119,6 +119,7 @@ const items = [
   data-items={JSON.stringify(items)}
   data-search-src={`/search/${lang}.json`}
   data-in-text={g.inText}
+  data-on-page={g.onPage}
   data-home={localePath(lang, "/")}
   data-empty-text={t.noResults}
 >
@@ -207,11 +208,23 @@ const items = [
     return folded
   }
 
+  /** On a post or case study, its sections first, read from its table of contents. */
+  function sectionItems(): Item[] {
+    return [...document.querySelectorAll<HTMLAnchorElement>(".toc-link")].map((link) => ({
+      group: overlay.dataset.onPage!,
+      label: link.lastElementChild!.textContent!,
+      hint: link.firstElementChild!.textContent!,
+      action: "jump",
+      target: decodeURIComponent(link.hash.slice(1)),
+    }))
+  }
+
   function allItems(): Item[] {
     const light = getTheme() === "light"
-    return items.map((item) =>
-      item.action === "theme" && light ? { ...item, label: item.altLabel! } : item
-    )
+    return [
+      ...sectionItems(),
+      ...items.map((item) => (item.action === "theme" && light ? { ...item, label: item.altLabel! } : item)),
+    ]
   }
 
   /**
@@ -404,7 +417,7 @@ const items = [
     close()
     switch (item.action) {
       case "jump":
-        // Sections only exist on the home page; elsewhere, navigate there.
+        // A section of this page (the home page's, or an article's); otherwise, go home to it.
         if (!scrollToId(item.target!)) location.href = `${overlay.dataset.home}#${item.target}`
         break
       case "go":
