@@ -103,6 +103,8 @@ const shareImage = new URL(ogImage.path, SITE_URL).href
     <link rel="icon" type="image/jpeg" href="/logo.jpg" />
     <!-- Home-screen icon on iPhone and iPad; iOS rounds the corners itself. -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- Name and icons when the site is added to an Android home screen. -->
+    <link rel="manifest" href="/site.webmanifest" />
     <!-- Colour of the phone browser's address bar; switched with the theme. -->
     <meta name="theme-color" content="#000000" />
     <meta name="generator" content={Astro.generator} />
