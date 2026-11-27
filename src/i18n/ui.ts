@@ -111,6 +111,7 @@ const en = {
   close: "Close",
   fullSize: "Full size ↗",
   fullSizeAria: "Open image at full size",
+  original: "Original ↗",
   copy: "Copy",
   copied: "Copied",
   blogDescription:
@@ -271,6 +272,7 @@ const es: typeof en = {
   close: "Cerrar",
   fullSize: "Ampliar ↗",
   fullSizeAria: "Abrir la imagen en tamaño completo",
+  original: "Original ↗",
   copy: "Copiar",
   copied: "Copiado",
   blogDescription:
