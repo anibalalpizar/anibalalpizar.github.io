@@ -114,6 +114,10 @@ const en = {
   original: "Original ↗",
   copy: "Copy",
   copied: "Copied",
+  shareLabel: "Share this page",
+  share: "Share",
+  copyLink: "Copy link",
+  linkCopied: "Link copied",
   blogDescription:
     "Articles by Aníbal Alpízar on web development: what he builds, how and what he learns along the way.",
   navBlog: "Blog",
@@ -275,6 +279,10 @@ const es: typeof en = {
   original: "Original ↗",
   copy: "Copiar",
   copied: "Copiado",
+  shareLabel: "Comparte esta página",
+  share: "Compartir",
+  copyLink: "Copiar enlace",
+  linkCopied: "Enlace copiado",
   blogDescription:
     "Artículos de Aníbal Alpízar sobre desarrollo web: lo que construye, cómo lo hace y lo que aprende en el camino.",
   navBlog: "Blog",

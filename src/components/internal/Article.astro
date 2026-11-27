@@ -100,6 +100,22 @@ const two = (n: number) => String(n).padStart(2, "0")
 
   <slot />
 
+  <!-- Share: the phone's share sheet where there is one, otherwise copies the link. -->
+  <div class="share">
+    <Marks />
+    <span class="share-label">{t.shareLabel}</span>
+    <button
+      type="button"
+      class="share-button"
+      aria-live="polite"
+      data-share
+      data-share-text={t.share}
+      data-copied={t.linkCopied}
+    >
+      {t.copyLink}
+    </button>
+  </div>
+
   {
     (prev || next) && (
       <nav class="pager" aria-label={pagerLabel}>
@@ -126,6 +142,32 @@ const two = (n: number) => String(n).padStart(2, "0")
 <script>
   import type { Lang } from "../../i18n/ui"
   import { timeAgo } from "../../utils/dates"
+
+  const share = document.querySelector<HTMLButtonElement>("[data-share]")
+  // Touch devices with a share sheet get it; elsewhere the button copies the link.
+  const canShare = !!navigator.share && matchMedia("(hover: none)").matches
+  if (share) {
+    const label = canShare ? share.dataset.shareText! : share.textContent!.trim()
+    share.textContent = label
+    let timer: number | undefined
+    share.addEventListener("click", async () => {
+      const url = location.href.split("#")[0]
+      if (canShare) {
+        try {
+          await navigator.share({ title: document.title, url })
+        } catch {}
+        return
+      }
+      try {
+        await navigator.clipboard.writeText(url)
+      } catch {
+        return
+      }
+      share.textContent = share.dataset.copied!
+      clearTimeout(timer)
+      timer = window.setTimeout(() => (share.textContent = label), 1600)
+    })
+  }
 
   // "2y ago" is computed at build time; refresh it so it doesn't go stale.
   document.querySelectorAll<HTMLElement>("[data-ago]").forEach((el) => {
@@ -218,6 +260,48 @@ const two = (n: number) => String(n).padStart(2, "0")
   @media print {
     .progress {
       display: none !important;
+    }
+  }
+
+  .share {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 16px;
+    padding: 20px var(--px);
+    border-top: 1px solid var(--line);
+  }
+
+  .share-label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: var(--dim);
+  }
+
+  .share-button {
+    height: 36px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg);
+    color: inherit;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+
+  .share-button:hover,
+  .share-button:focus-visible {
+    background: var(--hover);
+  }
+
+  @media print {
+    .share {
+      display: none;
     }
   }
 
