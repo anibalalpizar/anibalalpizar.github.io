@@ -1,6 +1,30 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
+import { readdirSync, readFileSync } from 'node:fs';
+
+// Publication date of each post and case study by its URL path, for <lastmod>
+// in the sitemap. Read from the front matter: content collections aren't
+// available while the config loads.
+function contentDates() {
+  const dates = {};
+  for (const collection of ['posts', 'cases']) {
+    for (const lang of ['en', 'es']) {
+      const dir = `./src/content/${collection}/${lang}`;
+      for (const file of readdirSync(dir).filter((name) => name.endsWith('.mdx'))) {
+        const text = readFileSync(`${dir}/${file}`, 'utf8');
+        const date = text.match(/^date:\s*"?(\d{4}-\d{2}-\d{2})/m)?.[1];
+        const path =
+          collection === 'posts'
+            ? `/blog/${file.slice(0, -4)}`
+            : text.match(/^path:\s*"?([^"\r\n]+)/m)?.[1];
+        if (date && path) dates[`${lang === 'es' ? '/es' : ''}${path}/`] = date;
+      }
+    }
+  }
+  return dates;
+}
+const lastmod = contentDates();
 
 // https://astro.build/config
 export default defineConfig({
@@ -44,6 +68,11 @@ export default defineConfig({
       // Error pages, the /about redirect and the CV pages (printed to PDF and
       // removed by scripts/build-cv.mjs) aren't real pages to index.
       filter: (page) => !/\/(404|about|cv)\/?$/.test(new URL(page).pathname),
+      // Posts and case studies say when they were published.
+      serialize(item) {
+        const date = lastmod[new URL(item.url).pathname];
+        return date ? { ...item, lastmod: date } : item;
+      },
     }),
   ],
   // The About page was merged into the single-page home.
