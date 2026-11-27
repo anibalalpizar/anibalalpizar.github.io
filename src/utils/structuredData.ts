@@ -106,12 +106,27 @@ type ArticlePage = {
   keywords?: string[]
 }
 
+/** The path to a page, which search results can show instead of its URL: Home › Blog › Post. */
+function breadcrumbs(lang: Lang, trail: { name: string; path: string }[]) {
+  return {
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map((crumb, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: crumb.name,
+      item: abs(localePath(lang, crumb.path)),
+    })),
+  }
+}
+
 function article(lang: Lang, type: "Article" | "BlogPosting", page: ArticlePage) {
+  const parents = type === "BlogPosting" ? [{ name: "Blog", path: "/blog" }] : []
   return {
     "@context": "https://schema.org",
     "@graph": [
       website,
       person(lang),
+      breadcrumbs(lang, [{ name: FULL_NAME, path: "/" }, ...parents, { name: page.headline, path: page.path }]),
       {
         "@type": type,
         headline: page.headline,
