@@ -243,7 +243,11 @@ const two = (n: number) => String(n).padStart(2, "0")
       height: 2px;
       background: var(--fg);
       transform-origin: left;
-      animation: progress linear both;
+      /* Longhands on purpose: the CSS minifier folds the "animation" shorthand and
+         animation-timeline into one shorthand, which browsers reject. */
+      animation-name: progress;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
       animation-timeline: scroll(root);
     }
   }
